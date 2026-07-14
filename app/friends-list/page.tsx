@@ -10,6 +10,7 @@ type Friend = {
 
 export default function FriendsListPage() {
   const [friends, setFriends] = useState<Friend[]>([]);
+  const [hasSO, setHasSO] = useState(false);
 
   useEffect(() => {
     async function loadFriends() {
@@ -18,6 +19,19 @@ export default function FriendsListPage() {
       } = await supabase.auth.getUser();
 
       if (!user) return;
+
+      const { data: relationships } = await supabase
+        .from("relationships")
+        .select("*");
+
+      const existingRelationship =
+        relationships?.find(
+          (r) =>
+            r.user_one === user.id ||
+            r.user_two === user.id
+        );
+
+      setHasSO(!!existingRelationship);
 
       const { data: friendships } = await supabase
         .from("friendships")
@@ -64,6 +78,13 @@ export default function FriendsListPage() {
 
     if (!user) return;
 
+    if (hasSO) {
+      alert(
+        "You already have a Significant Other ❤️"
+      );
+      return;
+    }
+
     const { error } = await supabase
       .from("significant_other_requests")
       .insert({
@@ -82,8 +103,8 @@ export default function FriendsListPage() {
   }
 
   return (
-    <main className="min-h-screen bg-pink-50 p-8">
-      <h1 className="text-4xl font-bold text-pink-600 mb-6">
+    <main className="min-h-screen bg-rose-50 p-8">
+      <h1 className="text-4xl font-bold text-rose-800 mb-6">
         My Friends
       </h1>
 
@@ -98,15 +119,24 @@ export default function FriendsListPage() {
               key={friend.id}
               className="bg-white p-4 rounded-xl shadow flex justify-between items-center"
             >
-              <p className="font-semibold">
+              <p className="font-semibold text-rose-800">
                 {friend.display_name}
               </p>
 
               <button
-                className="bg-red-500 text-white px-4 py-2 rounded"
-                onClick={() => sendSORequest(friend)}
+                disabled={hasSO}
+                onClick={() =>
+                  sendSORequest(friend)
+                }
+                className={`px-4 py-2 rounded text-white ${
+                  hasSO
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-red-500"
+                }`}
               >
-                Send SO Request ❤️
+                {hasSO
+                  ? "Already Have SO ❤️"
+                  : "Send SO Request ❤️"}
               </button>
             </div>
           ))}
