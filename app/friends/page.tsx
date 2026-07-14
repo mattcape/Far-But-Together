@@ -10,42 +10,50 @@ type Profile = {
 
 export default function FriendsPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [friends, setFriends] = useState<string[]>([]);
 
   useEffect(() => {
-    async function loadProfiles() {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+    async function loadData() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-        if (!user) {
-          setLoading(false);
-          return;
-        }
+      if (!user) return;
 
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("id, display_name");
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("id, display_name");
 
-        if (error) {
-          console.error(error);
-          setLoading(false);
-          return;
-        }
-
-        const filtered =
-          data?.filter((profile) => profile.id !== user.id) || [];
-
-        setProfiles(filtered);
-      } catch (err) {
-        console.error(err);
+      if (profileData) {
+        setProfiles(
+          profileData.filter(
+            (profile) => profile.id !== user.id
+          )
+        );
       }
 
-      setLoading(false);
+      const { data: friendshipData } = await supabase
+        .from("friendships")
+        .select("*");
+
+      if (friendshipData) {
+        const friendIds = friendshipData
+          .filter(
+            (f) =>
+              f.user_one === user.id ||
+              f.user_two === user.id
+          )
+          .map((f) =>
+            f.user_one === user.id
+              ? f.user_two
+              : f.user_one
+          );
+
+        setFriends(friendIds);
+      }
     }
 
-    loadProfiles();
+    loadData();
   }, []);
 
   return (
@@ -54,53 +62,46 @@ export default function FriendsPage() {
         Friends
       </h1>
 
-      {loading ? (
-        <p>Loading...</p>
-      ) : profiles.length === 0 ? (
-        <p>No users found.</p>
-      ) : (
-        <div className="space-y-4">
-          {profiles.map((profile) => (
-            <div
-              key={profile.id}
-              className="bg-white p-4 rounded-xl shadow flex justify-between items-center"
-            >
-              <div>
-                <p className="font-semibold">
-                  {profile.display_name}
-                </p>
-              </div>
+      <div className="space-y-4">
+        {profiles.map((profile) => (
+          <div
+            key={profile.id}
+            className="bg-white p-4 rounded-xl shadow flex justify-between items-center"
+          >
+            <p className="font-semibold">
+              {profile.display_name}
+            </p>
 
+            {friends.includes(profile.id) ? (
+              <span className="text-green-600 font-bold">
+                Friends ✅
+              </span>
+            ) : (
               <button
-  className="bg-pink-500 text-white px-4 py-2 rounded"
-  onClick={async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+                className="bg-pink-500 text-white px-4 py-2 rounded"
+                onClick={async () => {
+                  const {
+                    data: { user },
+                  } = await supabase.auth.getUser();
 
-    if (!user) return;
+                  if (!user) return;
 
-    const { error } = await supabase
-      .from("friend_requests")
-      .insert({
-        sender_id: user.id,
-        receiver_id: profile.id,
-      });
+                  await supabase
+                    .from("friend_requests")
+                    .insert({
+                      sender_id: user.id,
+                      receiver_id: profile.id,
+                    });
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    alert("Friend request sent!");
-  }}
->
-  Add Friend
-</button>
-            </div>
-          ))}
-        </div>
-      )}
+                  alert("Friend request sent!");
+                }}
+              >
+                Add Friend
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
     </main>
   );
 }
