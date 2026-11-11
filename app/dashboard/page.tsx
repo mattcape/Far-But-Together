@@ -1,16 +1,55 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { format } from "date-fns";
 import { supabase } from "@/lib/supabase";
+
+// A plain "YYYY-MM-DD" is read as UTC by `new Date(...)`, which lands on the
+// evening before in US timezones. Build it as local midnight instead.
+function parseVisitDate(value: string): Date {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+
+  if (match) {
+    return new Date(
+      Number(match[1]),
+      Number(match[2]) - 1,
+      Number(match[3])
+    );
+  }
+
+  return new Date(value);
+}
+
+function formatCountdown(
+  visitDate: Date | null,
+  now: number
+): string {
+  if (!visitDate) return "Visit Not Set";
+
+  const diff = visitDate.getTime() - now;
+
+  if (diff <= 0) return "❤️ It's Visit Day! ❤️";
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor(
+    (diff / (1000 * 60 * 60)) % 24
+  );
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+
+  return `${days} Days ${hours} Hours ${minutes} Minutes ${seconds} Seconds`;
+}
 
 export default function Dashboard() {
   const [name, setName] = useState("Friend");
   const [significantOther, setSignificantOther] =
     useState("None");
 
-  const [countdown, setCountdown] = useState(
-    "Visit Not Set"
+  const [visitDate, setVisitDate] = useState<Date | null>(
+    null
   );
+
+  const [now, setNow] = useState(() => Date.now());
 
   const [latestCheckin, setLatestCheckin] =
     useState<{
@@ -69,54 +108,23 @@ export default function Dashboard() {
         );
       }
 
+      // Only visits today or later, soonest first, so a past visit
+      // never hides the next upcoming one.
       const { data: visits } = await supabase
         .from("visits")
         .select("*")
         .eq("relationship_id", relationship.id)
+        .gte("visit_date", format(new Date(), "yyyy-MM-dd"))
         .order("visit_date", {
           ascending: true,
         })
         .limit(1);
 
       if (visits && visits.length > 0) {
-        const visitDate = new Date(
-          visits[0].visit_date
+        setNow(Date.now());
+        setVisitDate(
+          parseVisitDate(visits[0].visit_date)
         );
-
-        const updateCountdown = () => {
-          const now = new Date();
-
-          const diff =
-            visitDate.getTime() - now.getTime();
-
-          if (diff <= 0) {
-            setCountdown("❤️ It's Visit Day! ❤️");
-            return;
-          }
-
-          const days = Math.floor(
-            diff / (1000 * 60 * 60 * 24)
-          );
-
-          const hours = Math.floor(
-            (diff / (1000 * 60 * 60)) % 24
-          );
-
-          const minutes = Math.floor(
-            (diff / (1000 * 60)) % 60
-          );
-
-          const seconds = Math.floor(
-            (diff / 1000) % 60
-          );
-
-          setCountdown(
-            `${days} Days ${hours} Hours ${minutes} Minutes ${seconds} Seconds`
-          );
-        };
-
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
       }
 
       const { data: checkins } = await supabase
@@ -144,6 +152,18 @@ export default function Dashboard() {
 
     loadData();
   }, []);
+
+  // Tick once a second while a visit is set. The cleanup stops the
+  // timer when the visit changes or the page unmounts.
+  useEffect(() => {
+    if (!visitDate) return;
+
+    const id = setInterval(() => setNow(Date.now()), 1000);
+
+    return () => clearInterval(id);
+  }, [visitDate]);
+
+  const countdown = formatCountdown(visitDate, now);
 
   function goTo(path: string) {
     window.location.href = path;
