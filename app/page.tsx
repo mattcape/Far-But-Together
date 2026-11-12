@@ -112,9 +112,8 @@ const ACCOUNT: Destination[] = [
   {
     href: "/settings",
     title: "Settings",
-    description: "Manage your account.",
+    description: "Change your name or password, or sign out.",
     icon: Settings,
-    soon: true,
   },
 ];
 

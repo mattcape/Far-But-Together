@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import AuthCard from "@/components/AuthCard";
 import { supabase } from "@/lib/supabase";
+import { saveDisplayName } from "@/lib/profile";
 import { INPUT, PRIMARY_BUTTON } from "@/lib/ui";
 
 export default function OnboardingPage() {
@@ -56,29 +57,12 @@ export default function OnboardingPage() {
       return;
     }
 
-    const { data: updated, error: updateError } = await supabase
-      .from("profiles")
-      .update({ display_name: name })
-      .eq("id", user.id)
-      .select("id");
+    const saveError = await saveDisplayName(user.id, name);
 
-    if (updateError) {
-      setError(updateError.message);
+    if (saveError) {
+      setError(saveError);
       setBusy(false);
       return;
-    }
-
-    // No profile row yet? Create one.
-    if (!updated || updated.length === 0) {
-      const { error: insertError } = await supabase
-        .from("profiles")
-        .insert({ id: user.id, display_name: name });
-
-      if (insertError) {
-        setError(insertError.message);
-        setBusy(false);
-        return;
-      }
     }
 
     window.location.href = "/dashboard";
