@@ -38,6 +38,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     if (!isPublic && signedIn === false) router.replace("/login");
   }, [isPublic, signedIn, router]);
 
+  // Opening a page from the homepage always starts at its top. (Coming back
+  // to the homepage restores its old position; see ScrollMemory.)
+  useEffect(() => {
+    if (pathname !== "/") window.scrollTo(0, 0);
+  }, [pathname, signedIn]);
+
   if (isPublic) return <>{children}</>;
 
   if (signedIn !== true) {

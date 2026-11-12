@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { format } from "date-fns";
+import { differenceInCalendarDays, format } from "date-fns";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import PageFrame from "@/components/PageFrame";
@@ -43,6 +43,27 @@ function formatCountdown(
   return `${days} Days ${hours} Hours ${minutes} Minutes ${seconds} Seconds`;
 }
 
+// Days in a row, counting back from today (or yesterday, if you haven't
+// checked in yet today), with at least one check-in.
+function streakFrom(createdAt: string[]): number {
+  const days = [
+    ...new Set(
+      createdAt.map((c) => differenceInCalendarDays(new Date(), new Date(c)))
+    ),
+  ].sort((a, b) => a - b);
+
+  let expected = days[0] === 0 ? 0 : 1;
+  let streak = 0;
+
+  for (const day of days) {
+    if (day !== expected) break;
+    streak += 1;
+    expected += 1;
+  }
+
+  return days[0] === 0 || days[0] === 1 ? streak : 0;
+}
+
 function greetingFor(hour: number): string {
   if (hour < 12) return "Good morning";
   if (hour < 18) return "Good afternoon";
@@ -58,6 +79,9 @@ export default function Dashboard() {
   const [visitDate, setVisitDate] = useState<Date | null>(
     null
   );
+
+  const [streak, setStreak] = useState(0);
+  const [checkedInToday, setCheckedInToday] = useState(false);
 
   const [now, setNow] = useState(() => Date.now());
 
@@ -79,6 +103,21 @@ export default function Dashboard() {
       setGreeting(greetingFor(new Date().getHours()));
 
       if (!user) return;
+
+      const { data: mine } = await supabase
+        .from("checkins")
+        .select("created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(400);
+
+      if (mine) {
+        const stamps = mine.map((c) => c.created_at as string);
+        setStreak(streakFrom(stamps));
+        setCheckedInToday(
+          stamps.some((c) => differenceInCalendarDays(new Date(), new Date(c)) === 0)
+        );
+      }
 
       const { data: profileData } = await supabase
         .from("profiles")
@@ -203,6 +242,20 @@ export default function Dashboard() {
             to start counting down.
           </p>
         ) : null}
+      </section>
+
+      <section className={`${CARD} mt-6 p-6 sm:p-8`}>
+        <h2 className="font-display text-2xl text-ink">Your check-in streak</h2>
+        <p className="mt-3 font-display text-3xl text-rose-deep sm:text-4xl">
+          {streak === 1 ? "1 day" : `${streak} days`}
+        </p>
+        <p className="mt-2 text-ink/80">
+          {checkedInToday
+            ? "You've checked in today."
+            : streak > 0
+              ? "Check in today to keep it going."
+              : "Check in today to start a streak."}
+        </p>
       </section>
 
       <section className={`${CARD} mt-6 p-6 sm:p-8`}>
