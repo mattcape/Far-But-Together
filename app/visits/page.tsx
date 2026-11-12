@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import HomeButton from "@/components/HomeButton";
 
 export default function VisitsPage() {
   const [date, setDate] = useState("");
@@ -51,6 +52,8 @@ export default function VisitsPage() {
   return (
     <main className="min-h-screen bg-rose-50 p-8">
       <div className="max-w-xl mx-auto bg-white p-8 rounded-3xl shadow">
+        <HomeButton />
+
         <h1 className="text-4xl font-bold text-rose-800 mb-6">
           Next Visit ❤️
         </h1>
