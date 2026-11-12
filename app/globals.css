@@ -1,26 +1,172 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --sky: #bfddf2;
+  --mist: #eaf1f7;
+  --blush: #f9e6df;
+  --ink: #2a2850;
+  --rose-deep: #b93f61;
+  --lantern: #f3b55c;
+
+  --background: var(--mist);
+  --foreground: var(--ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-sky: var(--sky);
+  --color-mist: var(--mist);
+  --color-blush: var(--blush);
+  --color-ink: var(--ink);
+  --color-rose-deep: var(--rose-deep);
+  --color-lantern: var(--lantern);
+  --font-sans: var(--font-figtree);
+  --font-display: var(--font-young-serif);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-figtree), system-ui, sans-serif;
+}
+
+/* ------------------------------------------------------------------
+   Homepage intro: clouds drift, then part and fade to reveal the page,
+   and a line draws itself between the two lanterns.
+   Timeline: clouds part 1.6s to 4.8s, sky fades 2.8s to 4.4s,
+   arc draws 3s to 5.4s.
+   ------------------------------------------------------------------ */
+
+@keyframes cloud-part {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--dx, 0), var(--dy, 0), 0) scale(1.15);
+    opacity: 0;
+  }
+}
+
+@keyframes cloud-drift {
+  0%,
+  100% {
+    transform: translate3d(-1.5%, 0, 0);
+  }
+  50% {
+    transform: translate3d(1.5%, 0, 0);
+  }
+}
+
+@keyframes intro-sky {
+  0% {
+    opacity: 1;
+    visibility: visible;
+  }
+  99% {
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes wordmark-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes arc-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes lantern-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.12);
+  }
+}
+
+.intro-overlay {
+  animation: intro-sky 1.6s ease-in 2.8s forwards;
+}
+
+.intro-cloud {
+  animation: cloud-drift 7s ease-in-out infinite;
+}
+
+.intro-cloud > svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: cloud-part 2.6s cubic-bezier(0.5, 0, 0.3, 1) var(--delay, 1.6s)
+    forwards;
+}
+
+.intro-wordmark {
+  animation: wordmark-out 0.9s ease-in 1.5s forwards;
+}
+
+.cloud-idle {
+  animation: cloud-drift 9s ease-in-out infinite;
+}
+
+.arc-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: arc-draw 2.4s ease-in-out 3s forwards;
+}
+
+.lantern-halo {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lantern-glow 4s ease-in-out infinite;
+}
+
+/* On phones the drawing scales down to a hairline, so thicken it. */
+@media (max-width: 640px) {
+  .arc-line {
+    stroke-width: 7;
+  }
+
+  .lantern-core {
+    r: 17px;
+  }
+
+  .lantern-halo {
+    r: 60px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-overlay {
+    display: none;
+  }
+
+  .intro-cloud,
+  .cloud-idle,
+  .lantern-halo {
+    animation: none;
+  }
+
+  .arc-line {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
 }
