@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import PageFrame from "@/components/PageFrame";
+import { CARD, FOCUS, PRIMARY_BUTTON, SECONDARY_BUTTON } from "@/lib/ui";
 
 // A plain "YYYY-MM-DD" is read as UTC by `new Date(...)`, which lands on the
 // evening before in US timezones. Build it as local midnight instead.
@@ -24,11 +27,11 @@ function formatCountdown(
   visitDate: Date | null,
   now: number
 ): string {
-  if (!visitDate) return "Visit Not Set";
+  if (!visitDate) return "No visit set yet";
 
   const diff = visitDate.getTime() - now;
 
-  if (diff <= 0) return "❤️ It's Visit Day! ❤️";
+  if (diff <= 0) return "It's visit day!";
 
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor(
@@ -175,145 +178,80 @@ export default function Dashboard() {
 
   const countdown = formatCountdown(visitDate, now);
 
-  function goTo(path: string) {
-    window.location.href = path;
-  }
+  const link = `font-semibold text-ink underline decoration-rose-deep decoration-2 underline-offset-4 ${FOCUS}`;
 
   return (
-    <main className="min-h-screen bg-rose-50 p-8">
-      <div className="max-w-5xl mx-auto">
-        <div className="bg-white rounded-3xl shadow-lg p-8 mb-8">
-          <h1 className="text-4xl font-bold text-rose-800">
-            ❤️ Far But Together
-          </h1>
-
-          <p className="text-2xl mt-4 text-rose-800">
-            {greeting}, {name}
+    <PageFrame
+      title={`${greeting}, ${name}`}
+      subtitle={
+        significantOther === "None"
+          ? "Connect with your partner to see your countdown and their check-ins."
+          : `Together with ${significantOther}`
+      }
+      width="max-w-4xl"
+    >
+      <section className={`${CARD} p-6 sm:p-8`}>
+        <h2 className="font-display text-2xl text-ink">Next visit</h2>
+        <p className="mt-3 font-display text-3xl leading-snug text-rose-deep sm:text-4xl">
+          {countdown}
+        </p>
+        {!visitDate ? (
+          <p className="mt-3 text-ink/80">
+            <Link href="/visits" className={link}>
+              Set your next visit date
+            </Link>{" "}
+            to start counting down.
           </p>
+        ) : null}
+      </section>
 
-          <div className="mt-6 space-y-4">
-            <p className="text-lg text-rose-800">
-              ❤️ Significant Other:{" "}
-              <span className="font-bold">
-                {significantOther}
-              </span>
+      <section className={`${CARD} mt-6 p-6 sm:p-8`}>
+        <h2 className="font-display text-2xl text-ink">
+          {significantOther === "None"
+            ? "Partner's latest check-in"
+            : `${significantOther}'s latest check-in`}
+        </h2>
+
+        {latestCheckin ? (
+          <>
+            <p className="mt-4 text-lg font-semibold text-rose-deep">
+              Mood: {latestCheckin.mood}/10
             </p>
 
-            <div className="bg-rose-100 rounded-2xl p-4">
-              <p className="text-xl font-bold text-rose-800">
-                ⏳ Next Visit
-              </p>
+            <p className="mt-4 font-semibold text-ink">
+              How are you feeling today?
+            </p>
+            <p className="whitespace-pre-wrap text-ink/85">
+              {latestCheckin.thoughts}
+            </p>
 
-              <p className="text-lg text-rose-700 mt-2">
-                {countdown}
-              </p>
-            </div>
+            <p className="mt-4 font-semibold text-ink">
+              What are you grateful for today?
+            </p>
+            <p className="whitespace-pre-wrap text-ink/85">
+              {latestCheckin.gratitude}
+            </p>
+          </>
+        ) : (
+          <p className="mt-3 text-ink/80">
+            {significantOther === "None"
+              ? "Nothing here until you're connected."
+              : `${significantOther} hasn't shared a check-in yet.`}
+          </p>
+        )}
+      </section>
 
-            <div className="bg-white rounded-2xl shadow p-5">
-              <p className="text-xl font-bold text-rose-800">
-                ❤️ {significantOther}&apos;s Latest Check-In
-              </p>
-
-              {latestCheckin ? (
-                <>
-                  <p className="mt-4 text-lg font-semibold text-rose-700">
-                    Mood: {latestCheckin.mood}/10
-                  </p>
-
-                  <div className="mt-4">
-                    <p className="font-bold text-rose-800">
-                      How are you feeling today?
-                    </p>
-
-                    <p className="text-rose-700 mt-1">
-                      {latestCheckin.thoughts}
-                    </p>
-                  </div>
-
-                  <div className="mt-4">
-                    <p className="font-bold text-rose-800">
-                      What are you grateful for today?
-                    </p>
-
-                    <p className="text-rose-700 mt-1">
-                      {latestCheckin.gratitude}
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <p className="text-rose-700 mt-3">
-                  {significantOther} has not submitted a
-                  check-in yet.
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          <button
-            onClick={() => goTo("/friends")}
-            className="bg-white rounded-2xl shadow p-6 hover:shadow-xl transition text-left"
-          >
-            <div className="text-4xl mb-2">👥</div>
-            <h2 className="font-bold text-xl text-rose-800">
-              Friends
-            </h2>
-          </button>
-
-          <button
-            onClick={() => goTo("/friends-list")}
-            className="bg-white rounded-2xl shadow p-6 hover:shadow-xl transition text-left"
-          >
-            <div className="text-4xl mb-2">❤️</div>
-            <h2 className="font-bold text-xl text-rose-800">
-              Relationship
-            </h2>
-          </button>
-
-          <button
-            onClick={() =>
-              goTo("/relationship-requests")
-            }
-            className="bg-white rounded-2xl shadow p-6 hover:shadow-xl transition text-left"
-          >
-            <div className="text-4xl mb-2">💌</div>
-            <h2 className="font-bold text-xl text-rose-800">
-              Requests
-            </h2>
-          </button>
-
-          <button
-            onClick={() => goTo("/visits")}
-            className="bg-white rounded-2xl shadow p-6 hover:shadow-xl transition text-left"
-          >
-            <div className="text-4xl mb-2">⏳</div>
-            <h2 className="font-bold text-xl text-rose-800">
-              Visits
-            </h2>
-          </button>
-
-          <button
-            onClick={() => goTo("/checkins")}
-            className="bg-white rounded-2xl shadow p-6 hover:shadow-xl transition text-left"
-          >
-            <div className="text-4xl mb-2">😊</div>
-            <h2 className="font-bold text-xl text-rose-800">
-              Check-Ins
-            </h2>
-          </button>
-
-          <button
-            onClick={() => goTo("/checkins/view")}
-            className="bg-white rounded-2xl shadow p-6 hover:shadow-xl transition text-left"
-          >
-            <div className="text-4xl mb-2">📖</div>
-            <h2 className="font-bold text-xl text-rose-800">
-              Check-In Feed
-            </h2>
-          </button>
-        </div>
+      <div className="mt-8 flex flex-wrap gap-3">
+        <Link href="/checkins" className={PRIMARY_BUTTON}>
+          Check in today
+        </Link>
+        <Link href="/checkins/view" className={SECONDARY_BUTTON}>
+          Check-in feed
+        </Link>
+        <Link href="/visits" className={SECONDARY_BUTTON}>
+          Change visit date
+        </Link>
       </div>
-    </main>
+    </PageFrame>
   );
 }

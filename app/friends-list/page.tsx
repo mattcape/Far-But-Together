@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import HomeButton from "@/components/HomeButton";
+import PageFrame from "@/components/PageFrame";
+import StatusMessage from "@/components/StatusMessage";
+import { CARD, FOCUS } from "@/lib/ui";
 
 type Friend = {
   id: string;
@@ -11,7 +13,10 @@ type Friend = {
 
 export default function FriendsListPage() {
   const [friends, setFriends] = useState<Friend[]>([]);
-  const [hasSO, setHasSO] = useState(false);
+  const [hasPartner, setHasPartner] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [message, setMessage] = useState("");
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     async function loadFriends() {
@@ -25,126 +30,109 @@ export default function FriendsListPage() {
         .from("relationships")
         .select("*");
 
-      const existingRelationship =
-        relationships?.find(
-          (r) =>
-            r.user_one === user.id ||
-            r.user_two === user.id
-        );
-
-      setHasSO(!!existingRelationship);
+      setHasPartner(
+        !!relationships?.find(
+          (r) => r.user_one === user.id || r.user_two === user.id
+        )
+      );
 
       const { data: friendships } = await supabase
         .from("friendships")
         .select("*");
 
-      if (!friendships) return;
+      if (friendships) {
+        const friendIds = friendships
+          .filter((f) => f.user_one === user.id || f.user_two === user.id)
+          .map((f) => (f.user_one === user.id ? f.user_two : f.user_one));
 
-      const friendIds = friendships
-        .filter(
-          (f) =>
-            f.user_one === user.id ||
-            f.user_two === user.id
-        )
-        .map((f) =>
-          f.user_one === user.id
-            ? f.user_two
-            : f.user_one
+        const loadedFriends = await Promise.all(
+          friendIds.map(async (id) => {
+            const { data } = await supabase
+              .from("profiles")
+              .select("id, display_name")
+              .eq("id", id)
+              .single();
+
+            return data;
+          })
         );
 
-      const loadedFriends = await Promise.all(
-        friendIds.map(async (id) => {
-          const { data } = await supabase
-            .from("profiles")
-            .select("id, display_name")
-            .eq("id", id)
-            .single();
+        setFriends(loadedFriends.filter(Boolean) as Friend[]);
+      }
 
-          return data;
-        })
-      );
-
-      setFriends(
-        loadedFriends.filter(Boolean) as Friend[]
-      );
+      setLoaded(true);
     }
 
     loadFriends();
   }, []);
 
-  async function sendSORequest(friend: Friend) {
+  async function sendRequest(friend: Friend) {
+    setMessage("");
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) return;
 
-    if (hasSO) {
-      alert(
-        "You already have a Significant Other ❤️"
-      );
+    if (hasPartner) {
+      setFailed(true);
+      setMessage("You already have a partner.");
       return;
     }
 
     const { error } = await supabase
       .from("significant_other_requests")
-      .insert({
-        sender_id: user.id,
-        receiver_id: friend.id,
-      });
+      .insert({ sender_id: user.id, receiver_id: friend.id });
 
     if (error) {
-      alert(error.message);
+      setFailed(true);
+      setMessage(error.message);
       return;
     }
 
-    alert(
-      `Relationship request sent to ${friend.display_name} ❤️`
-    );
+    setFailed(false);
+    setMessage(`Relationship request sent to ${friend.display_name}.`);
   }
 
   return (
-    <main className="min-h-screen bg-rose-50 p-8">
-      <HomeButton />
+    <PageFrame
+      title="My friends"
+      subtitle="Send a relationship request to the person you're together with."
+    >
+      <StatusMessage message={message} tone={failed ? "error" : "success"} />
 
-      <h1 className="text-4xl font-bold text-rose-800 mb-6">
-        My Friends
-      </h1>
-
-      {friends.length === 0 ? (
-        <div className="bg-white p-4 rounded-xl shadow">
-          No friends yet.
+      {!loaded ? (
+        <p role="status" className="mt-4 text-ink/75">
+          Loading...
+        </p>
+      ) : friends.length === 0 ? (
+        <div className={`${CARD} mt-4 p-6 text-ink/80`}>
+          No friends yet. Add someone from Find friends first.
         </div>
       ) : (
-        <div className="space-y-4">
+        <ul className="mt-4 space-y-3">
           {friends.map((friend) => (
-            <div
+            <li
               key={friend.id}
-              className="bg-white p-4 rounded-xl shadow flex justify-between items-center"
+              className={`${CARD} flex items-center justify-between gap-4 p-4`}
             >
-              <p className="font-semibold text-rose-800">
+              <span className="font-semibold text-ink">
                 {friend.display_name}
-              </p>
+              </span>
 
               <button
-                disabled={hasSO}
-                onClick={() =>
-                  sendSORequest(friend)
-                }
-                className={`px-4 py-2 rounded text-white ${
-                  hasSO
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-red-500"
-                }`}
+                type="button"
+                disabled={hasPartner}
+                onClick={() => sendRequest(friend)}
+                className={`rounded-full bg-rose-deep px-5 py-2 font-semibold text-white hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 ${FOCUS}`}
               >
-                {hasSO
-                  ? "Already Have SO ❤️"
-                  : "Send SO Request ❤️"}
+                {hasPartner ? "You have a partner" : "Send relationship request"}
               </button>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
-    </main>
+    </PageFrame>
   );
 }

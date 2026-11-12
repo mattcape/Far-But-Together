@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import HomeButton from "@/components/HomeButton";
+import PageFrame from "@/components/PageFrame";
+import StatusMessage from "@/components/StatusMessage";
+import { CARD, FOCUS } from "@/lib/ui";
 
-type RelationshipRequest = {
+type Request = {
   id: string;
   sender_id: string;
   receiver_id: string;
@@ -12,115 +14,118 @@ type RelationshipRequest = {
 };
 
 export default function RelationshipRequestsPage() {
-  const [requests, setRequests] = useState<
-    RelationshipRequest[]
-  >([]);
+  const [requests, setRequests] = useState<Request[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [message, setMessage] = useState("");
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
+    async function loadRequests() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("significant_other_requests")
+        .select("*")
+        .eq("receiver_id", user.id);
+
+      if (error) console.error(error);
+
+      if (data) {
+        const withNames = await Promise.all(
+          data.map(async (request) => {
+            const { data: sender } = await supabase
+              .from("profiles")
+              .select("display_name")
+              .eq("id", request.sender_id)
+              .single();
+
+            return {
+              ...request,
+              sender_name: sender?.display_name || "Unknown user",
+            };
+          })
+        );
+
+        setRequests(withNames);
+      }
+
+      setLoaded(true);
+    }
+
     loadRequests();
   }, []);
 
-  async function loadRequests() {
+  async function acceptRequest(request: Request) {
+    setMessage("");
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) return;
 
-    const { data } = await supabase
-      .from("significant_other_requests")
-      .select("*")
-      .eq("receiver_id", user.id);
-
-    if (!data) return;
-
-    const enhanced = await Promise.all(
-      data.map(async (request) => {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("display_name")
-          .eq("id", request.sender_id)
-          .single();
-
-        return {
-          ...request,
-          sender_name:
-            profile?.display_name || "Unknown User",
-        };
-      })
-    );
-
-    setRequests(enhanced);
-  }
-
-  async function acceptRequest(
-    request: RelationshipRequest
-  ) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) return;
-
-    const { error } = await supabase
-      .from("relationships")
-      .insert({
-        user_one: request.sender_id,
-        user_two: user.id,
-      });
+    const { error } = await supabase.from("relationships").insert({
+      user_one: request.sender_id,
+      user_two: user.id,
+    });
 
     if (error) {
-      alert(error.message);
+      setFailed(true);
+      setMessage(error.message);
       return;
     }
 
-    await supabase
-      .from("significant_other_requests")
-      .delete()
-      .eq("id", request.id);
+    await supabase.from("significant_other_requests").delete().eq("id", request.id);
 
-    setRequests(
-      requests.filter((r) => r.id !== request.id)
-    );
-
-    alert("Relationship accepted ❤️");
+    setRequests((current) => current.filter((r) => r.id !== request.id));
+    setFailed(false);
+    setMessage("Relationship accepted. You're connected.");
   }
 
   return (
-    <main className="min-h-screen bg-pink-50 p-8">
-      <HomeButton />
+    <PageFrame
+      title="Relationship requests"
+      subtitle="Accept a request to be someone's partner."
+    >
+      <StatusMessage message={message} tone={failed ? "error" : "success"} />
 
-      <h1 className="text-4xl font-bold text-pink-600 mb-6">
-        Relationship Requests ❤️
-      </h1>
-
-      {requests.length === 0 ? (
-        <div className="bg-white p-4 rounded-xl shadow">
+      {!loaded ? (
+        <p role="status" className="mt-4 text-ink/75">
+          Loading...
+        </p>
+      ) : requests.length === 0 ? (
+        <div className={`${CARD} mt-4 p-6 text-ink/80`}>
           No relationship requests.
         </div>
       ) : (
-        requests.map((request) => (
-          <div
-            key={request.id}
-            className="bg-white p-4 rounded-xl shadow mb-4"
-          >
-            <p className="text-gray-500">
-              Relationship Request From
-            </p>
-
-            <p className="text-xl font-bold mt-2">
-              {request.sender_name}
-            </p>
-
-            <button
-              onClick={() => acceptRequest(request)}
-              className="bg-red-500 text-white px-4 py-2 rounded mt-4"
+        <ul className="mt-4 space-y-3">
+          {requests.map((request) => (
+            <li
+              key={request.id}
+              className={`${CARD} flex items-center justify-between gap-4 p-4`}
             >
-              Accept ❤️
-            </button>
-          </div>
-        ))
+              <div>
+                <div className="text-sm text-ink/70">Relationship request from</div>
+                <div className="font-display text-2xl text-ink">
+                  {request.sender_name}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => acceptRequest(request)}
+                className={`rounded-full bg-rose-deep px-5 py-2 font-semibold text-white hover:brightness-110 ${FOCUS}`}
+              >
+                Accept
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
-    </main>
+    </PageFrame>
   );
 }

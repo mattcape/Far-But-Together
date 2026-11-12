@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import HomeButton from "@/components/HomeButton";
+import PageFrame from "@/components/PageFrame";
+import { CARD } from "@/lib/ui";
 
 type Checkin = {
   id: string;
@@ -14,79 +15,66 @@ type Checkin = {
 
 export default function ViewCheckinsPage() {
   const [checkins, setCheckins] = useState<Checkin[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    async function loadCheckins() {
+      const { data, error } = await supabase
+        .from("checkins")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) console.error(error);
+      if (data) setCheckins(data);
+      setLoaded(true);
+    }
+
     loadCheckins();
   }, []);
 
-  async function loadCheckins() {
-    const { data, error } = await supabase
-      .from("checkins")
-      .select("*")
-      .order("created_at", {
-        ascending: false,
-      });
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    if (data) {
-      setCheckins(data);
-    }
-  }
-
   return (
-    <main className="min-h-screen bg-rose-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <HomeButton />
+    <PageFrame
+      title="Check-in feed"
+      subtitle="Everything the two of you have shared, newest first."
+      width="max-w-4xl"
+    >
+      {!loaded ? (
+        <p role="status" className="text-ink/75">
+          Loading...
+        </p>
+      ) : checkins.length === 0 ? (
+        <div className={`${CARD} p-6 text-ink/80`}>
+          No check-ins yet. Share your first one from Daily check-in.
+        </div>
+      ) : (
+        <ul className="space-y-4">
+          {checkins.map((checkin) => (
+            <li key={checkin.id} className={`${CARD} p-6`}>
+              <p className="font-display text-2xl text-ink">
+                Mood: {checkin.mood}/10
+              </p>
 
-        <h1 className="text-4xl font-bold text-rose-800 mb-6">
-          Check-In Feed ❤️
-        </h1>
+              <p className="mt-4 font-semibold text-rose-deep">
+                How are you feeling?
+              </p>
+              <p className="whitespace-pre-wrap text-ink/85">
+                {checkin.thoughts}
+              </p>
 
-        {checkins.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow p-6">
-            No check-ins yet.
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {checkins.map((checkin) => (
-              <div
-                key={checkin.id}
-                className="bg-white rounded-2xl shadow p-6"
-              >
-                <p className="text-xl font-bold text-rose-800">
-                  Mood: {checkin.mood}/10
-                </p>
+              <p className="mt-4 font-semibold text-rose-deep">
+                Grateful for
+              </p>
+              <p className="whitespace-pre-wrap text-ink/85">
+                {checkin.gratitude}
+              </p>
 
-                <div className="mt-4">
-                  <p className="font-semibold text-rose-700">
-                    How are you feeling?
-                  </p>
-
-                  <p>{checkin.thoughts}</p>
-                </div>
-
-                <div className="mt-4">
-                  <p className="font-semibold text-rose-700">
-                    Grateful For
-                  </p>
-
-                  <p>{checkin.gratitude}</p>
-                </div>
-
-                <p className="text-sm text-gray-500 mt-4">
-                  {new Date(
-                    checkin.created_at
-                  ).toLocaleString()}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </main>
+              <p className="mt-4 text-sm text-ink/65">
+                {new Date(checkin.created_at).toLocaleString()}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </PageFrame>
   );
 }

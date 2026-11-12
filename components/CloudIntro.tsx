@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useState, useSyncExternalStore, type CSSProperties } from "react";
 import CloudShape from "./CloudShape";
 
 type Placement = {
@@ -32,8 +32,33 @@ const CLOUDS: Placement[] = [
   { top: 27, left: 28, width: 44, dx: "0vw", dy: "-32vh", delay: 2.3, tone: WHITE },
 ];
 
+const SEEN_KEY = "fbt-intro-seen";
+
+function readSeen(): boolean {
+  try {
+    return !!sessionStorage.getItem(SEEN_KEY);
+  } catch {
+    return false;
+  }
+}
+
+const noSubscription = () => () => {};
+
 export default function CloudIntro() {
-  const [done, setDone] = useState(false);
+  // The intro plays once per visit. Coming back home from inside the app
+  // skips it. The server always renders the intro; the browser corrects it.
+  const seen = useSyncExternalStore(noSubscription, readSeen, () => false);
+  const [dismissed, setDismissed] = useState(false);
+  const done = seen || dismissed;
+
+  function finish() {
+    try {
+      sessionStorage.setItem(SEEN_KEY, "1");
+    } catch {
+      // Storage can be blocked; the intro just plays again next time.
+    }
+    setDismissed(true);
+  }
 
   if (done) return null;
 
@@ -45,7 +70,7 @@ export default function CloudIntro() {
           "linear-gradient(180deg, #8fc1e6 0%, #cfe4f3 70%, #eef4f9 100%)",
       }}
       onAnimationEnd={(e) => {
-        if (e.animationName === "intro-sky") setDone(true);
+        if (e.animationName === "intro-sky") finish();
       }}
     >
       <div aria-hidden="true">
@@ -78,7 +103,7 @@ export default function CloudIntro() {
 
       <button
         type="button"
-        onClick={() => setDone(true)}
+        onClick={finish}
         className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 rounded-full bg-white/70 px-4 py-2 text-sm font-medium text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
       >
         Skip intro
