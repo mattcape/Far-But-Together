@@ -5,6 +5,8 @@ import { differenceInCalendarDays, format } from "date-fns";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import PageFrame from "@/components/PageFrame";
+import MoodChart, { type MoodSeries } from "@/components/MoodChart";
+import WelcomeTour from "@/components/WelcomeTour";
 import {
   countUnread,
   ensureTeamMessage,
@@ -69,6 +71,26 @@ function streakFrom(createdAt: string[]): number {
   return days[0] === 0 || days[0] === 1 ? streak : 0;
 }
 
+const MOOD_DAYS = 30;
+
+// One point per day: the average mood of that day's check-ins.
+function dailyMood(
+  rows: { mood: number; created_at: string }[]
+): { day: number; mood: number }[] {
+  const byDay = new Map<number, number[]>();
+
+  for (const r of rows) {
+    const day = differenceInCalendarDays(new Date(), new Date(r.created_at));
+    if (day < 0 || day >= MOOD_DAYS) continue;
+    byDay.set(day, [...(byDay.get(day) ?? []), r.mood]);
+  }
+
+  return [...byDay.entries()].map(([day, moods]) => ({
+    day,
+    mood: moods.reduce((a, b) => a + b, 0) / moods.length,
+  }));
+}
+
 function greetingFor(hour: number): string {
   if (hour < 12) return "Good morning";
   if (hour < 18) return "Good afternoon";
@@ -89,6 +111,7 @@ export default function Dashboard() {
   const [unread, setUnread] = useState<number | null>(null);
   const [nudge, setNudge] = useState("");
   const [nudgeBusy, setNudgeBusy] = useState(false);
+  const [moods, setMoods] = useState<{ mine: MoodSeries; theirs: MoodSeries | null } | null>(null);
   const [streak, setStreak] = useState(0);
   const [checkedInToday, setCheckedInToday] = useState(false);
 
@@ -195,6 +218,28 @@ export default function Dashboard() {
         );
       }
 
+      const since = new Date();
+      since.setDate(since.getDate() - MOOD_DAYS);
+
+      const { data: moodRows } = await supabase
+        .from("checkins")
+        .select("user_id, mood, created_at")
+        .in("user_id", [user.id, otherUserId])
+        .gte("created_at", since.toISOString());
+
+      if (moodRows) {
+        setMoods({
+          mine: {
+            name: "You",
+            points: dailyMood(moodRows.filter((r) => r.user_id === user.id)),
+          },
+          theirs: {
+            name: otherProfile?.display_name || "Your partner",
+            points: dailyMood(moodRows.filter((r) => r.user_id === otherUserId)),
+          },
+        });
+      }
+
       const { data: checkins } = await supabase
         .from("checkins")
         .select("*")
@@ -251,6 +296,7 @@ export default function Dashboard() {
 
   return (
     <div className="dash">
+    <WelcomeTour />
     <PageFrame
       title={`${greeting}, ${name}`}
       subtitle={
@@ -336,6 +382,18 @@ export default function Dashboard() {
           </p>
         )}
       </section>
+
+      {moods &&
+      moods.mine.points.length + (moods.theirs?.points.length ?? 0) >= 2 ? (
+        <section className={`${CARD} mt-6 p-6 sm:p-8`}>
+          <h2 className="font-display text-2xl text-ink">
+            Mood, last 30 days
+          </h2>
+          <div className="mt-4">
+            <MoodChart days={MOOD_DAYS} mine={moods.mine} theirs={moods.theirs} />
+          </div>
+        </section>
+      ) : null}
 
       <div className="mt-8 flex flex-wrap gap-3">
         <Link href="/checkins" className={PRIMARY_BUTTON}>

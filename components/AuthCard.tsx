@@ -15,6 +15,7 @@ export default function AuthCard({
 }) {
   return (
     <main
+      id="main"
       className="flex min-h-screen flex-col items-center px-6 py-10"
       style={{ background: SKY_BACKGROUND }}
     >

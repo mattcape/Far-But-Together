@@ -16,6 +16,7 @@ export default function PageFrame({
 }) {
   return (
     <main
+      id="main"
       className="min-h-screen px-6 py-10"
       style={{ background: SKY_BACKGROUND }}
     >

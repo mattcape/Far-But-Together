@@ -1,13 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { countUnread, ensureTeamMessage } from "@/lib/messages";
+import { notificationsOn } from "@/components/AppearanceSettings";
 
 // Pages that have their own full-screen look and don't need the bar.
-const HIDDEN_ON = ["/", "/login", "/register", "/onboarding"];
+const HIDDEN_ON = [
+  "/",
+  "/login",
+  "/register",
+  "/onboarding",
+  "/forgot-password",
+  "/reset-password",
+];
 
 const FOCUS =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
@@ -31,6 +39,7 @@ export default function NavBar() {
   }, []);
 
   const [unread, setUnread] = useState<number | null>(null);
+  const lastUnread = useRef<number | null>(null);
 
   // Each visit drops a team message in the mailbox; keep the count fresh as
   // people move around and while the page stays open.
@@ -50,7 +59,27 @@ export default function NavBar() {
 
       const count = await countUnread(user.id);
 
-      if (!cancelled) setUnread(count);
+      if (cancelled) return;
+
+      setUnread(count);
+
+      // Show the count in the tab title.
+      const base = document.title.replace(/^\(\d+\)\s/, "");
+      document.title = count && count > 0 ? `(${count}) ${base}` : base;
+
+      // A pop-up when something new arrives while the tab is open.
+      if (
+        count !== null &&
+        lastUnread.current !== null &&
+        count > lastUnread.current &&
+        notificationsOn()
+      ) {
+        new Notification("Far But Together", {
+          body: "You have a new message in your mailbox.",
+        });
+      }
+
+      lastUnread.current = count;
     }
 
     refresh();

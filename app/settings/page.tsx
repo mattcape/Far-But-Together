@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import PageFrame from "@/components/PageFrame";
 import { supabase } from "@/lib/supabase";
 import { saveDisplayName } from "@/lib/profile";
+import AppearanceSettings from "@/components/AppearanceSettings";
 import { CARD, INPUT, PRIMARY_BUTTON, SECONDARY_BUTTON } from "@/lib/ui";
 
 type Message = { kind: "ok" | "error"; text: string } | null;
@@ -218,6 +219,8 @@ export default function SettingsPage() {
             </button>
           </form>
         </section>
+
+        <AppearanceSettings />
 
         <section className={`${CARD} p-6`}>
           <h2 className="font-display text-2xl text-ink">Sign out</h2>

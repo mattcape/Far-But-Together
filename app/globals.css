@@ -10,6 +10,7 @@
 
   --background: var(--mist);
   --foreground: var(--ink);
+  --sky-gradient: linear-gradient(180deg, #bfddf2 0%, #eaf1f7 38%, #f9e6df 100%);
 }
 
 @theme inline {
@@ -25,12 +26,52 @@
   --font-display: var(--font-young-serif);
 }
 
+
+/* Dark theme: used when chosen in Settings, or when the device prefers it
+   and nothing was chosen. Surfaces that use "white" become a dark navy. */
+:root[data-theme="dark"] {
+  --sky: #1b2145;
+  --mist: #171a33;
+  --blush: #3a2430;
+  --ink: #ebeaf8;
+  --rose-deep: #f08fae;
+  --lantern: #f3b55c;
+  --background: #12152b;
+  --foreground: #ebeaf8;
+  --color-white: #232a52;
+  --sky-gradient: linear-gradient(180deg, #131937 0%, #1a1f42 42%, #2b1e36 100%);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sky: #1b2145;
+    --mist: #171a33;
+    --blush: #3a2430;
+    --ink: #ebeaf8;
+    --rose-deep: #f08fae;
+    --lantern: #f3b55c;
+    --background: #12152b;
+    --foreground: #ebeaf8;
+    --color-white: #232a52;
+    --sky-gradient: linear-gradient(180deg, #131937 0%, #1a1f42 42%, #2b1e36 100%);
+  }
+}
+:root[data-theme="dark"] .bg-rose-deep { background-color: #b93f61; color: #fff; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .bg-rose-deep { background-color: #b93f61; color: #fff; }
+}
+/* The opening clouds stay white in every theme. */
+.intro-overlay { --color-white: #ffffff; }
+
 /* The dashboard uses a softer, warmer serif for its headings and numbers. */
 .dash .font-display {
   font-family: var(--font-fraunces), Georgia, serif;
   font-variation-settings: "SOFT" 100;
   font-variant-numeric: lining-nums;
   letter-spacing: -0.01em;
+}
+
+html {
+  color-scheme: light dark;
 }
 
 body {

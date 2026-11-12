@@ -1,7 +1,6 @@
 // Shared look-and-feel pieces so every page matches the homepage.
 
-export const SKY_BACKGROUND =
-  "linear-gradient(180deg, #bfddf2 0%, #eaf1f7 38%, #f9e6df 100%)";
+export const SKY_BACKGROUND = "var(--sky-gradient)";
 
 export const FOCUS =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";

@@ -5,7 +5,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 // Pages anyone can open without logging in.
-const PUBLIC_PATHS = ["/", "/login", "/register"];
+const PUBLIC_PATHS = [
+  "/",
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+];
 
 // Sends logged-out visitors to /login when they open an inner page, and
 // keeps the page hidden until we know they're signed in.

@@ -313,13 +313,13 @@ export default function Home() {
       className="min-h-screen overflow-x-hidden"
       style={{
         background:
-          "linear-gradient(180deg, #bfddf2 0%, #eaf1f7 38%, #f9e6df 100%)",
+          "var(--sky-gradient)",
       }}
     >
       <CloudIntro />
       <ScrollMemory />
 
-      <main>
+      <main id="main">
         <section className="relative isolate overflow-hidden px-6 pb-28 pt-16 text-center sm:pt-24">
           <div
             aria-hidden="true"
