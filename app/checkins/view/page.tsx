@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import HomeButton from "@/components/HomeButton";
 
 type Checkin = {
   id: string;
@@ -39,6 +40,8 @@ export default function ViewCheckinsPage() {
   return (
     <main className="min-h-screen bg-rose-50 p-8">
       <div className="max-w-4xl mx-auto">
+        <HomeButton />
+
         <h1 className="text-4xl font-bold text-rose-800 mb-6">
           Check-In Feed ❤️
         </h1>

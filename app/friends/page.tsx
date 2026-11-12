@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import HomeButton from "@/components/HomeButton";
 
 type Profile = {
   id: string;
@@ -58,6 +59,8 @@ export default function FriendsPage() {
 
   return (
     <main className="min-h-screen bg-pink-50 p-8">
+      <HomeButton />
+
       <h1 className="text-4xl font-bold text-pink-600 mb-6">
         Friends
       </h1>

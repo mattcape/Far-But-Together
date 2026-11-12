@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import HomeButton from "@/components/HomeButton";
 
 type Friend = {
   id: string;
@@ -104,6 +105,8 @@ export default function FriendsListPage() {
 
   return (
     <main className="min-h-screen bg-rose-50 p-8">
+      <HomeButton />
+
       <h1 className="text-4xl font-bold text-rose-800 mb-6">
         My Friends
       </h1>
