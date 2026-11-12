@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Figtree, Young_Serif } from "next/font/google";
+import AuthGuard from "@/components/AuthGuard";
 import NavBar from "@/components/NavBar";
 import "./globals.css";
 
@@ -35,7 +36,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <NavBar />
-        {children}
+        <AuthGuard>{children}</AuthGuard>
       </body>
     </html>
   );
