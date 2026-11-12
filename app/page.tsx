@@ -95,9 +95,8 @@ const PEOPLE: Destination[] = [
   {
     href: "/community",
     title: "Community",
-    description: "Connect with other people.",
+    description: "Share a short message with everyone here.",
     icon: MessagesSquare,
-    soon: true,
   },
 ];
 
