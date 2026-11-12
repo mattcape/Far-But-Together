@@ -25,6 +25,7 @@ export default function CommunityPage() {
   const [names, setNames] = useState<Record<string, string>>({});
   const [body, setBody] = useState("");
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -124,6 +125,33 @@ export default function CommunityPage() {
     setBody("");
   }
 
+  async function report(item: Post) {
+    if (
+      !window.confirm(
+        "Report this post? It will be hidden from you right away, and hidden from everyone once enough people report it."
+      )
+    )
+      return;
+
+    setError("");
+
+    const { error: reportError } = await supabase
+      .from("community_reports")
+      .insert({ post_id: item.id, reporter_id: userId });
+
+    if (reportError) {
+      setError(
+        isMissingTable(reportError)
+          ? "Reporting isn't set up yet. Run supabase/community-reports.sql in Supabase."
+          : reportError.message
+      );
+      return;
+    }
+
+    setPosts((current) => current.filter((p) => p.id !== item.id));
+    setNotice("Thanks. That post is hidden from you.");
+  }
+
   async function remove(item: Post) {
     if (!window.confirm("Delete this post?")) return;
 
@@ -170,6 +198,12 @@ export default function CommunityPage() {
               {body.length}/{MAX}
             </div>
 
+            {notice ? (
+              <p role="status" className="mt-2 text-sm font-semibold text-ink">
+                {notice}
+              </p>
+            ) : null}
+
             {error ? (
               <p role="alert" className="mt-2 text-sm font-semibold text-rose-deep">
                 {error}
@@ -215,7 +249,16 @@ export default function CommunityPage() {
                     >
                       Delete
                     </button>
-                  ) : null}
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => report(item)}
+                      aria-label={`Report post by ${names[item.author_id] || "someone"}`}
+                      className={`shrink-0 rounded-full px-3 py-1 text-sm font-semibold text-ink/70 hover:bg-white hover:text-rose-deep ${FOCUS}`}
+                    >
+                      Report
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
