@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { countUnread, ensureTeamMessage } from "@/lib/messages";
 
 // Pages that have their own full-screen look and don't need the bar.
 const HIDDEN_ON = ["/", "/login", "/register", "/onboarding"];
@@ -28,6 +29,38 @@ export default function NavBar() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const [unread, setUnread] = useState<number | null>(null);
+
+  // Each visit drops a team message in the mailbox; keep the count fresh as
+  // people move around and while the page stays open.
+  useEffect(() => {
+    if (!signedIn) return;
+
+    let cancelled = false;
+
+    async function refresh() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user || cancelled) return;
+
+      await ensureTeamMessage();
+
+      const count = await countUnread(user.id);
+
+      if (!cancelled) setUnread(count);
+    }
+
+    refresh();
+    const id = window.setInterval(refresh, 60000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [signedIn, pathname]);
 
   if (HIDDEN_ON.includes(pathname)) return null;
 
@@ -58,6 +91,16 @@ export default function NavBar() {
             <Link href="/dashboard" className={`hover:underline ${FOCUS}`}>
               Dashboard
             </Link>
+            {signedIn && unread !== null ? (
+              <Link href="/mailbox" className={`hover:underline ${FOCUS}`}>
+                Mailbox
+                {unread > 0 ? (
+                  <span className="ml-1.5 rounded-full bg-rose-deep px-2 py-0.5 text-xs text-white">
+                    {unread}
+                  </span>
+                ) : null}
+              </Link>
+            ) : null}
             {signedIn ? (
               <button
                 type="button"

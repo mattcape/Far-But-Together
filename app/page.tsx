@@ -9,6 +9,7 @@ import {
   Images,
   LayoutDashboard,
   Mail,
+  Inbox,
   MessagesSquare,
   Plane,
   Settings,
@@ -22,6 +23,8 @@ import CloudShape from "@/components/CloudShape";
 import ConnectionArc from "@/components/ConnectionArc";
 import ScrollMemory from "@/components/ScrollMemory";
 import { loadHomeData, type HomeData } from "@/lib/relationship";
+import { countUnread, ensureTeamMessage } from "@/lib/messages";
+import { supabase } from "@/lib/supabase";
 
 type Destination = {
   href: string;
@@ -58,6 +61,12 @@ const PLAN_AND_REMEMBER: Destination[] = [
     title: "Dates",
     description: "Plans for the time you spend together.",
     icon: CalendarHeart,
+  },
+  {
+    href: "/mailbox",
+    title: "Mailbox",
+    description: "Kind messages from your people, and a note from us.",
+    icon: Inbox,
   },
   {
     href: "/memories",
@@ -124,6 +133,12 @@ function visitLine(days: number): string {
   return `Your next visit is in ${days} days.`;
 }
 
+function dateLine(title: string, days: number): string {
+  if (days === 0) return `${title} is today.`;
+  if (days === 1) return `${title} is tomorrow.`;
+  return `${title} is in ${days} days.`;
+}
+
 function Status({ data }: { data: HomeData }) {
   const link = `font-semibold text-ink underline decoration-rose-deep decoration-2 underline-offset-4 ${FOCUS}`;
 
@@ -138,22 +153,31 @@ function Status({ data }: { data: HomeData }) {
     );
   }
 
-  if (data.partnerName && data.daysToNextVisit !== null) {
-    return (
-      <p className="mt-3 text-lg font-semibold text-ink">
-        {visitLine(data.daysToNextVisit)}
-      </p>
-    );
-  }
-
   if (data.partnerName) {
     return (
-      <p className="mt-3 text-lg text-ink/85">
-        <Link href="/visits" className={link}>
-          Set your next visit date
-        </Link>{" "}
-        to start a countdown.
-      </p>
+      <>
+        {data.daysToNextVisit !== null ? (
+          <p className="mt-3 text-lg font-semibold text-ink">
+            {visitLine(data.daysToNextVisit)}
+          </p>
+        ) : (
+          <p className="mt-3 text-lg text-ink/85">
+            <Link href="/visits" className={link}>
+              Set your next visit date
+            </Link>{" "}
+            to start a countdown.
+          </p>
+        )}
+
+        {data.nextDate ? (
+          <p className="mt-1 text-lg text-ink/85">
+            Next date:{" "}
+            <Link href="/dates" className={link}>
+              {dateLine(data.nextDate.title, data.nextDate.days)}
+            </Link>
+          </p>
+        ) : null}
+      </>
     );
   }
 
@@ -247,12 +271,29 @@ function Group({
 
 export default function Home() {
   const [data, setData] = useState<HomeData | null>(null);
+  const [unread, setUnread] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
-    loadHomeData().then((result) => {
-      if (!cancelled) setData(result);
+    loadHomeData().then(async (result) => {
+      if (cancelled) return;
+      setData(result);
+
+      if (!result.signedIn) return;
+
+      // Each visit brings a fresh team message; show how many are unread.
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      await ensureTeamMessage();
+
+      const count = await countUnread(user.id);
+
+      if (!cancelled) setUnread(count);
     });
 
     return () => {
@@ -315,6 +356,18 @@ export default function Home() {
                 {data.name ? `Welcome back, ${data.name}.` : "Welcome back."}
               </p>
               <Status data={data} />
+              {unread !== null && unread > 0 ? (
+                <p className="mt-1 text-lg text-ink/85">
+                  <Link
+                    href="/mailbox"
+                    className={`font-semibold text-ink underline decoration-rose-deep decoration-2 underline-offset-4 ${FOCUS}`}
+                  >
+                    {unread === 1
+                      ? "You have 1 new message"
+                      : `You have ${unread} new messages`}
+                  </Link>
+                </p>
+              ) : null}
             </>
           ) : (
             <p className="mx-auto mt-5 max-w-xl text-balance text-lg leading-relaxed text-ink/85">

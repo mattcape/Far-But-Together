@@ -6,6 +6,7 @@ export type HomeData = {
   name: string | null;
   partnerName: string | null;
   daysToNextVisit: number | null;
+  nextDate: { title: string; days: number } | null;
 };
 
 const SIGNED_OUT: HomeData = {
@@ -13,6 +14,7 @@ const SIGNED_OUT: HomeData = {
   name: null,
   partnerName: null,
   daysToNextVisit: null,
+  nextDate: null,
 };
 
 // A plain "YYYY-MM-DD" is read as UTC by `new Date(...)`, which lands on the
@@ -48,6 +50,7 @@ export async function loadHomeData(): Promise<HomeData> {
       name: null,
       partnerName: null,
       daysToNextVisit: null,
+      nextDate: null,
     };
 
     const { data: profile } = await supabase
@@ -97,6 +100,25 @@ export async function loadHomeData(): Promise<HomeData> {
           new Date()
         )
       );
+    }
+
+    // The next planned date. Ignored if the table isn't set up yet.
+    const { data: dates } = await supabase
+      .from("dates")
+      .select("title, date_on")
+      .eq("relationship_id", relationship.id)
+      .gte("date_on", format(new Date(), "yyyy-MM-dd"))
+      .order("date_on", { ascending: true })
+      .limit(1);
+
+    if (dates && dates.length > 0) {
+      result.nextDate = {
+        title: dates[0].title,
+        days: Math.max(
+          0,
+          differenceInCalendarDays(parseDay(dates[0].date_on), new Date())
+        ),
+      };
     }
 
     return result;

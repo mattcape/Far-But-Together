@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Figtree, Young_Serif } from "next/font/google";
+import { Figtree, Fraunces, Young_Serif } from "next/font/google";
 import AuthGuard from "@/components/AuthGuard";
 import NavBar from "@/components/NavBar";
 import "./globals.css";
@@ -7,6 +7,12 @@ import "./globals.css";
 const figtree = Figtree({
   variable: "--font-figtree",
   subsets: ["latin"],
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  axes: ["opsz", "SOFT"],
 });
 
 const youngSerif = Young_Serif({
@@ -32,7 +38,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${figtree.variable} ${youngSerif.variable} h-full antialiased`}
+      className={`${figtree.variable} ${youngSerif.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <NavBar />

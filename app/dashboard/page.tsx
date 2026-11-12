@@ -5,6 +5,11 @@ import { differenceInCalendarDays, format } from "date-fns";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import PageFrame from "@/components/PageFrame";
+import {
+  countUnread,
+  ensureTeamMessage,
+  sendMessage,
+} from "@/lib/messages";
 import { CARD, FOCUS, PRIMARY_BUTTON, SECONDARY_BUTTON } from "@/lib/ui";
 
 // A plain "YYYY-MM-DD" is read as UTC by `new Date(...)`, which lands on the
@@ -80,6 +85,10 @@ export default function Dashboard() {
     null
   );
 
+  const [partnerId, setPartnerId] = useState<string | null>(null);
+  const [unread, setUnread] = useState<number | null>(null);
+  const [nudge, setNudge] = useState("");
+  const [nudgeBusy, setNudgeBusy] = useState(false);
   const [streak, setStreak] = useState(0);
   const [checkedInToday, setCheckedInToday] = useState(false);
 
@@ -103,6 +112,11 @@ export default function Dashboard() {
       setGreeting(greetingFor(new Date().getHours()));
 
       if (!user) return;
+
+      // A fresh team message for this visit, then how many are unread.
+      ensureTeamMessage()
+        .then(() => countUnread(user.id))
+        .then(setUnread);
 
       const { data: mine } = await supabase
         .from("checkins")
@@ -147,6 +161,8 @@ export default function Dashboard() {
         relationship.user_one === user.id
           ? relationship.user_two
           : relationship.user_one;
+
+      setPartnerId(otherUserId);
 
       const { data: otherProfile } = await supabase
         .from("profiles")
@@ -217,9 +233,24 @@ export default function Dashboard() {
 
   const countdown = formatCountdown(visitDate, now);
 
+  async function thinkingOfYou() {
+    if (!partnerId) return;
+
+    setNudge("");
+    setNudgeBusy(true);
+    const problem = await sendMessage(partnerId, "nudge", "Thinking of you");
+    setNudgeBusy(false);
+
+    setNudge(
+      problem ??
+        `${significantOther} will see that you're thinking of them.`
+    );
+  }
+
   const link = `font-semibold text-ink underline decoration-rose-deep decoration-2 underline-offset-4 ${FOCUS}`;
 
   return (
+    <div className="dash">
     <PageFrame
       title={`${greeting}, ${name}`}
       subtitle={
@@ -229,6 +260,18 @@ export default function Dashboard() {
       }
       width="max-w-4xl"
     >
+      {unread !== null && unread > 0 ? (
+        <Link
+          href="/mailbox"
+          className={`${CARD} mb-6 flex items-center justify-between gap-4 p-5 hover:bg-white ${FOCUS}`}
+        >
+          <span className="font-display text-xl text-ink">
+            You have {unread === 1 ? "1 new message" : `${unread} new messages`}
+          </span>
+          <span className="font-semibold text-rose-deep">Open mailbox</span>
+        </Link>
+      ) : null}
+
       <section className={`${CARD} p-6 sm:p-8`}>
         <h2 className="font-display text-2xl text-ink">Next visit</h2>
         <p className="mt-3 font-display text-3xl leading-snug text-rose-deep sm:text-4xl">
@@ -304,7 +347,24 @@ export default function Dashboard() {
         <Link href="/visits" className={SECONDARY_BUTTON}>
           Change visit date
         </Link>
+        {partnerId && unread !== null ? (
+          <button
+            type="button"
+            onClick={thinkingOfYou}
+            disabled={nudgeBusy}
+            className={SECONDARY_BUTTON}
+          >
+            {nudgeBusy ? "Sending..." : "Thinking of you"}
+          </button>
+        ) : null}
       </div>
+
+      {nudge ? (
+        <p role="status" className="mt-4 font-semibold text-ink">
+          {nudge}
+        </p>
+      ) : null}
     </PageFrame>
+    </div>
   );
 }
