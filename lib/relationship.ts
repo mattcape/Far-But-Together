@@ -17,7 +17,7 @@ const SIGNED_OUT: HomeData = {
 
 // A plain "YYYY-MM-DD" is read as UTC by `new Date(...)`, which lands on the
 // evening before in US timezones. Build it as local midnight instead.
-function parseDay(value: string): Date {
+export function parseDay(value: string): Date {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
 
   if (match) {
@@ -103,4 +103,48 @@ export async function loadHomeData(): Promise<HomeData> {
   } catch {
     return SIGNED_OUT;
   }
+}
+
+export type MyRelationship =
+  | { status: "signed-out" }
+  | { status: "none"; userId: string }
+  | { status: "ok"; userId: string; relationshipId: string | number };
+
+// Finds the signed-in user's relationship, which shared pages (dates,
+// memories) are scoped to.
+export async function getMyRelationship(): Promise<MyRelationship> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { status: "signed-out" };
+
+  const { data: relationships } = await supabase
+    .from("relationships")
+    .select("id")
+    .or(`user_one.eq.${user.id},user_two.eq.${user.id}`)
+    .limit(1);
+
+  const relationship = relationships?.[0];
+
+  if (!relationship) return { status: "none", userId: user.id };
+
+  return {
+    status: "ok",
+    userId: user.id,
+    relationshipId: relationship.id,
+  };
+}
+
+// True when a query failed because the table hasn't been created yet.
+export function isMissingTable(
+  error: { code?: string; message?: string } | null
+): boolean {
+  if (!error) return false;
+
+  return (
+    error.code === "42P01" ||
+    error.code === "PGRST205" ||
+    /does not exist|could not find the table/i.test(error.message ?? "")
+  );
 }

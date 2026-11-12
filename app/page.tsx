@@ -57,14 +57,12 @@ const PLAN_AND_REMEMBER: Destination[] = [
     title: "Dates",
     description: "Plans for the time you spend together.",
     icon: CalendarHeart,
-    soon: true,
   },
   {
     href: "/memories",
     title: "Memories",
     description: "Moments you want to keep.",
     icon: Images,
-    soon: true,
   },
 ];
 
