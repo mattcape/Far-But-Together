@@ -130,6 +130,17 @@ function visitLine(days: number): string {
 function Status({ data }: { data: HomeData }) {
   const link = `font-semibold text-ink underline decoration-rose-deep decoration-2 underline-offset-4 ${FOCUS}`;
 
+  if (!data.name) {
+    return (
+      <p className="mt-3 text-lg text-ink/85">
+        <Link href="/onboarding" className={link}>
+          Add your name
+        </Link>{" "}
+        so your partner sees who you are.
+      </p>
+    );
+  }
+
   if (data.partnerName && data.daysToNextVisit !== null) {
     return (
       <p className="mt-3 text-lg font-semibold text-ink">

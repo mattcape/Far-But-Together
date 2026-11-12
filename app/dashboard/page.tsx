@@ -40,7 +40,14 @@ function formatCountdown(
   return `${days} Days ${hours} Hours ${minutes} Minutes ${seconds} Seconds`;
 }
 
+function greetingFor(hour: number): string {
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
 export default function Dashboard() {
+  const [greeting, setGreeting] = useState("Hello");
   const [name, setName] = useState("Friend");
   const [significantOther, setSignificantOther] =
     useState("None");
@@ -64,6 +71,9 @@ export default function Dashboard() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+
+      // Set after mount so the server and browser can't disagree on the hour.
+      setGreeting(greetingFor(new Date().getHours()));
 
       if (!user) return;
 
@@ -178,7 +188,7 @@ export default function Dashboard() {
           </h1>
 
           <p className="text-2xl mt-4 text-rose-800">
-            Good Afternoon, {name}
+            {greeting}, {name}
           </p>
 
           <div className="mt-6 space-y-4">
@@ -201,7 +211,7 @@ export default function Dashboard() {
 
             <div className="bg-white rounded-2xl shadow p-5">
               <p className="text-xl font-bold text-rose-800">
-                ❤️ {significantOther}'s Latest Check-In
+                ❤️ {significantOther}&apos;s Latest Check-In
               </p>
 
               {latestCheckin ? (
