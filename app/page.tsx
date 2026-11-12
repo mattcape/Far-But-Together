@@ -20,6 +20,7 @@ import {
 import CloudIntro from "@/components/CloudIntro";
 import CloudShape from "@/components/CloudShape";
 import ConnectionArc from "@/components/ConnectionArc";
+import ScrollMemory from "@/components/ScrollMemory";
 import { loadHomeData, type HomeData } from "@/lib/relationship";
 
 type Destination = {
@@ -276,6 +277,7 @@ export default function Home() {
       }}
     >
       <CloudIntro />
+      <ScrollMemory />
 
       <main>
         <section className="relative isolate overflow-hidden px-6 pb-28 pt-16 text-center sm:pt-24">
