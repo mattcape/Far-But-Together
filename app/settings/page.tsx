@@ -5,6 +5,8 @@ import PageFrame from "@/components/PageFrame";
 import { supabase } from "@/lib/supabase";
 import { saveDisplayName } from "@/lib/profile";
 import AppearanceSettings from "@/components/AppearanceSettings";
+import RelationshipSettings from "@/components/RelationshipSettings";
+import TimezoneSettings from "@/components/TimezoneSettings";
 import { CARD, INPUT, PRIMARY_BUTTON, SECONDARY_BUTTON } from "@/lib/ui";
 
 type Message = { kind: "ok" | "error"; text: string } | null;
@@ -220,7 +222,11 @@ export default function SettingsPage() {
           </form>
         </section>
 
+        <TimezoneSettings />
+
         <AppearanceSettings />
+
+        <RelationshipSettings />
 
         <section className={`${CARD} p-6`}>
           <h2 className="font-display text-2xl text-ink">Sign out</h2>

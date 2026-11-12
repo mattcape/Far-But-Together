@@ -7,6 +7,7 @@ import {
   CalendarHeart,
   HeartHandshake,
   Images,
+  ListChecks,
   LayoutDashboard,
   Mail,
   Inbox,
@@ -61,6 +62,12 @@ const PLAN_AND_REMEMBER: Destination[] = [
     title: "Dates",
     description: "Plans for the time you spend together.",
     icon: CalendarHeart,
+  },
+  {
+    href: "/bucket-list",
+    title: "Bucket list",
+    description: "Things you want to do together.",
+    icon: ListChecks,
   },
   {
     href: "/mailbox",

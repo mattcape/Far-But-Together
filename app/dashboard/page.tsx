@@ -112,6 +112,13 @@ export default function Dashboard() {
   const [nudge, setNudge] = useState("");
   const [nudgeBusy, setNudgeBusy] = useState(false);
   const [moods, setMoods] = useState<{ mine: MoodSeries; theirs: MoodSeries | null } | null>(null);
+  const [relationshipId, setRelationshipId] = useState<string | number | null>(null);
+  const [anniversary, setAnniversary] = useState<string | null>(null);
+  const [editingAnniversary, setEditingAnniversary] = useState(false);
+  const [anniversaryInput, setAnniversaryInput] = useState("");
+  const [anniversaryError, setAnniversaryError] = useState("");
+  const [partnerZone, setPartnerZone] = useState<string | null>(null);
+  const [clock, setClock] = useState(() => Date.now());
   const [streak, setStreak] = useState(0);
   const [checkedInToday, setCheckedInToday] = useState(false);
 
@@ -180,12 +187,33 @@ export default function Dashboard() {
 
       if (!relationship) return;
 
+      setRelationshipId(relationship.id);
+      setAnniversary(relationship.anniversary ?? null);
+
       const otherUserId =
         relationship.user_one === user.id
           ? relationship.user_two
           : relationship.user_one;
 
       setPartnerId(otherUserId);
+
+      // Time zones: remember ours if we haven't, and read our partner's.
+      const { data: zones } = await supabase
+        .from("profiles")
+        .select("id, timezone")
+        .in("id", [user.id, otherUserId]);
+
+      const myZone = zones?.find((z) => z.id === user.id)?.timezone;
+      const detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+      if (!myZone && detected) {
+        await supabase
+          .from("profiles")
+          .update({ timezone: detected })
+          .eq("id", user.id);
+      }
+
+      setPartnerZone(zones?.find((z) => z.id === otherUserId)?.timezone ?? null);
 
       const { data: otherProfile } = await supabase
         .from("profiles")
@@ -276,7 +304,54 @@ export default function Dashboard() {
     return () => clearInterval(id);
   }, [visitDate]);
 
+  // Keep "their local time" fresh.
+  useEffect(() => {
+    if (!partnerZone) return;
+
+    const id = setInterval(() => setClock(Date.now()), 30000);
+
+    return () => clearInterval(id);
+  }, [partnerZone]);
+
   const countdown = formatCountdown(visitDate, now);
+
+  async function saveAnniversary() {
+    setAnniversaryError("");
+
+    if (!anniversaryInput || relationshipId === null) return;
+
+    const { error } = await supabase
+      .from("relationships")
+      .update({ anniversary: anniversaryInput })
+      .eq("id", relationshipId);
+
+    if (error) {
+      setAnniversaryError(error.message);
+      return;
+    }
+
+    setAnniversary(anniversaryInput);
+    setEditingAnniversary(false);
+  }
+
+  const daysTogether = anniversary
+    ? Math.max(0, differenceInCalendarDays(new Date(), parseVisitDate(anniversary)))
+    : null;
+
+  let partnerTime = "";
+
+  if (partnerZone) {
+    try {
+      partnerTime = new Intl.DateTimeFormat(undefined, {
+        weekday: "short",
+        hour: "numeric",
+        minute: "2-digit",
+        timeZone: partnerZone,
+      }).format(clock);
+    } catch {
+      partnerTime = "";
+    }
+  }
 
   async function thinkingOfYou() {
     if (!partnerId) return;
@@ -332,6 +407,64 @@ export default function Dashboard() {
           </p>
         ) : null}
       </section>
+
+      {relationshipId !== null ? (
+        <section className={`${CARD} mt-6 p-6 sm:p-8`}>
+          <h2 className="font-display text-2xl text-ink">Together</h2>
+
+          {daysTogether !== null && !editingAnniversary ? (
+            <>
+              <p className="mt-3 font-display text-3xl text-rose-deep sm:text-4xl">
+                {daysTogether === 1 ? "1 day" : `${daysTogether.toLocaleString()} days`}
+              </p>
+              <p className="mt-2 text-ink/80">
+                since {format(parseVisitDate(anniversary as string), "MMMM d, yyyy")}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setAnniversaryInput(anniversary ?? "");
+                  setEditingAnniversary(true);
+                }}
+                className={`mt-2 text-sm ${link}`}
+              >
+                Change date
+              </button>
+            </>
+          ) : (
+            <div className="mt-3">
+              <label htmlFor="anniversary" className="mb-1 block font-semibold text-ink">
+                The day you got together
+              </label>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <input
+                  id="anniversary"
+                  type="date"
+                  max={format(new Date(), "yyyy-MM-dd")}
+                  value={anniversaryInput}
+                  onChange={(e) => setAnniversaryInput(e.target.value)}
+                  className="w-full rounded-xl border border-ink/20 bg-white px-4 py-3 text-ink"
+                />
+                <button type="button" onClick={saveAnniversary} className={PRIMARY_BUTTON}>
+                  Save
+                </button>
+              </div>
+              {anniversaryError ? (
+                <p role="alert" className="mt-2 text-sm font-semibold text-rose-deep">
+                  {anniversaryError}
+                </p>
+              ) : null}
+            </div>
+          )}
+
+          {partnerTime ? (
+            <p className="mt-5 text-ink/85">
+              It&apos;s <span className="font-semibold text-ink">{partnerTime}</span>{" "}
+              for {significantOther}.
+            </p>
+          ) : null}
+        </section>
+      ) : null}
 
       <section className={`${CARD} mt-6 p-6 sm:p-8`}>
         <h2 className="font-display text-2xl text-ink">Your check-in streak</h2>

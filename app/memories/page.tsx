@@ -10,6 +10,7 @@ import {
   isMissingTable,
   parseDay,
 } from "@/lib/relationship";
+import { shrinkImage } from "@/lib/image";
 import { CARD, FOCUS, INPUT, PRIMARY_BUTTON } from "@/lib/ui";
 
 type Memory = {
@@ -17,11 +18,32 @@ type Memory = {
   title: string;
   body: string | null;
   memory_date: string;
+  photo_path: string | null;
 };
 
 type View = "loading" | "no-relationship" | "needs-setup" | "ready";
 
-const COLUMNS = "id, title, body, memory_date";
+const COLUMNS = "id, title, body, memory_date, photo_path";
+const BUCKET = "memory-photos";
+
+// Photos are private; each gets a temporary link to show it.
+async function signedUrls(rows: Memory[]): Promise<Record<string, string>> {
+  const paths = rows.map((r) => r.photo_path).filter(Boolean) as string[];
+
+  if (paths.length === 0) return {};
+
+  const { data } = await supabase.storage
+    .from(BUCKET)
+    .createSignedUrls(paths, 3600);
+
+  const urls: Record<string, string> = {};
+
+  for (const d of data ?? []) {
+    if (d.path && d.signedUrl) urls[d.path] = d.signedUrl;
+  }
+
+  return urls;
+}
 
 function newestFirst(a: Memory, b: Memory): number {
   return b.memory_date.localeCompare(a.memory_date);
@@ -34,6 +56,9 @@ export default function MemoriesPage() {
     string | number | null
   >(null);
   const [memories, setMemories] = useState<Memory[]>([]);
+  const [urls, setUrls] = useState<Record<string, string>>({});
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [fileKey, setFileKey] = useState(0);
 
   const [title, setTitle] = useState("");
   const [day, setDay] = useState("");
@@ -74,7 +99,13 @@ export default function MemoriesPage() {
 
       setUserId(mine.userId);
       setRelationshipId(mine.relationshipId);
-      setMemories(data ?? []);
+      const rows = data ?? [];
+      const links = await signedUrls(rows);
+
+      if (cancelled) return;
+
+      setUrls(links);
+      setMemories(rows);
       setView("ready");
     }
 
@@ -101,6 +132,29 @@ export default function MemoriesPage() {
     // Leaving the day blank means today.
     const memoryDate = day || format(new Date(), "yyyy-MM-dd");
 
+    let photoPath: string | null = null;
+
+    if (photo) {
+      try {
+        const blob = await shrinkImage(photo);
+        photoPath = `${relationshipId}/${crypto.randomUUID()}.jpg`;
+
+        const { error: uploadError } = await supabase.storage
+          .from(BUCKET)
+          .upload(photoPath, blob, { contentType: "image/jpeg" });
+
+        if (uploadError) throw new Error(uploadError.message);
+      } catch (uploadFailure) {
+        setBusy(false);
+        setError(
+          uploadFailure instanceof Error
+            ? uploadFailure.message
+            : "Couldn't upload that photo."
+        );
+        return;
+      }
+    }
+
     const { data, error: insertError } = await supabase
       .from("memories")
       .insert({
@@ -109,6 +163,7 @@ export default function MemoriesPage() {
         title: title.trim(),
         body: body.trim() || null,
         memory_date: memoryDate,
+        photo_path: photoPath,
       })
       .select(COLUMNS)
       .single();
@@ -120,7 +175,14 @@ export default function MemoriesPage() {
       return;
     }
 
+    if (data.photo_path) {
+      const links = await signedUrls([data]);
+      setUrls((current) => ({ ...current, ...links }));
+    }
+
     setMemories((current) => [data, ...current].sort(newestFirst));
+    setPhoto(null);
+    setFileKey((k) => k + 1);
     setTitle("");
     setDay("");
     setBody("");
@@ -137,6 +199,10 @@ export default function MemoriesPage() {
     if (deleteError) {
       setError(deleteError.message);
       return;
+    }
+
+    if (memory.photo_path) {
+      await supabase.storage.from(BUCKET).remove([memory.photo_path]);
     }
 
     setMemories((current) => current.filter((m) => m.id !== memory.id));
@@ -198,6 +264,21 @@ export default function MemoriesPage() {
               onChange={(e) => setBody(e.target.value)}
             />
 
+            <label
+              htmlFor="memory-photo"
+              className="mb-1 mt-4 block font-semibold text-ink"
+            >
+              Photo (optional)
+            </label>
+            <input
+              key={fileKey}
+              id="memory-photo"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className={`${INPUT} file:mr-4 file:rounded-full file:border-0 file:bg-blush file:px-4 file:py-1 file:font-semibold file:text-ink`}
+              onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
+            />
+
             {error ? (
               <p
                 role="alert"
@@ -231,13 +312,23 @@ export default function MemoriesPage() {
                   key={memory.id}
                   className={`${CARD} flex items-start justify-between gap-4 p-5`}
                 >
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="font-display text-2xl text-ink">
                       {memory.title}
                     </div>
                     <div className="mt-1 text-ink/70">
                       {format(parseDay(memory.memory_date), "MMMM d, yyyy")}
                     </div>
+                    {memory.photo_path && urls[memory.photo_path] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={urls[memory.photo_path]}
+                        alt={`Photo for ${memory.title}`}
+                        loading="lazy"
+                        className="mt-3 max-h-96 w-full rounded-2xl object-cover"
+                      />
+                    ) : null}
+
                     {memory.body ? (
                       <p className="mt-3 whitespace-pre-wrap leading-relaxed text-ink/80">
                         {memory.body}

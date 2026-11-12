@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import PageFrame from "@/components/PageFrame";
+import SentRequests from "@/components/SentRequests";
 import StatusMessage from "@/components/StatusMessage";
 import { CARD, FOCUS } from "@/lib/ui";
 
@@ -95,6 +96,40 @@ export default function FriendsListPage() {
     setMessage(`Relationship request sent to ${friend.display_name}.`);
   }
 
+  async function removeFriend(friend: Friend) {
+    if (
+      !window.confirm(
+        `Remove ${friend.display_name} from your friends? You can add them again later.`
+      )
+    )
+      return;
+
+    setMessage("");
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("friendships")
+      .delete()
+      .or(
+        `and(user_one.eq.${user.id},user_two.eq.${friend.id}),and(user_one.eq.${friend.id},user_two.eq.${user.id})`
+      );
+
+    if (error) {
+      setFailed(true);
+      setMessage(error.message);
+      return;
+    }
+
+    setFriends((current) => current.filter((f) => f.id !== friend.id));
+    setFailed(false);
+    setMessage(`${friend.display_name} was removed from your friends.`);
+  }
+
   return (
     <PageFrame
       title="My friends"
@@ -121,6 +156,14 @@ export default function FriendsListPage() {
                 {friend.display_name}
               </span>
 
+              <div className="flex flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => removeFriend(friend)}
+                className={`rounded-full px-4 py-2 text-sm font-semibold text-ink/70 hover:bg-white hover:text-rose-deep ${FOCUS}`}
+              >
+                Remove
+              </button>
               <button
                 type="button"
                 disabled={hasPartner}
@@ -129,10 +172,13 @@ export default function FriendsListPage() {
               >
                 {hasPartner ? "You have a partner" : "Send relationship request"}
               </button>
+              </div>
             </li>
           ))}
         </ul>
       )}
+
+      <SentRequests />
     </PageFrame>
   );
 }
