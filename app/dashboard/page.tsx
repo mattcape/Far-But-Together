@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import PageFrame from "@/components/PageFrame";
 import MoodChart, { type MoodSeries } from "@/components/MoodChart";
 import WelcomeTour from "@/components/WelcomeTour";
+import TogetherClock from "@/components/TogetherClock";
 import {
   countUnread,
   ensureTeamMessage,
@@ -334,10 +335,6 @@ export default function Dashboard() {
     setEditingAnniversary(false);
   }
 
-  const daysTogether = anniversary
-    ? Math.max(0, differenceInCalendarDays(new Date(), parseVisitDate(anniversary)))
-    : null;
-
   let partnerTime = "";
 
   if (partnerZone) {
@@ -412,13 +409,11 @@ export default function Dashboard() {
         <section className={`${CARD} mt-6 p-6 sm:p-8`}>
           <h2 className="font-display text-2xl text-ink">Together</h2>
 
-          {daysTogether !== null && !editingAnniversary ? (
+          {anniversary && !editingAnniversary ? (
             <>
-              <p className="mt-3 font-display text-3xl text-rose-deep sm:text-4xl">
-                {daysTogether === 1 ? "1 day" : `${daysTogether.toLocaleString()} days`}
-              </p>
-              <p className="mt-2 text-ink/80">
-                since {format(parseVisitDate(anniversary as string), "MMMM d, yyyy")}
+              <TogetherClock since={anniversary} />
+              <p className="mt-4 text-ink/80">
+                since {format(parseVisitDate(anniversary), "MMMM d, yyyy")}
               </p>
               <button
                 type="button"

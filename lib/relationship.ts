@@ -7,6 +7,7 @@ export type HomeData = {
   partnerName: string | null;
   daysToNextVisit: number | null;
   nextDate: { title: string; days: number } | null;
+  anniversary: string | null;
 };
 
 const SIGNED_OUT: HomeData = {
@@ -15,6 +16,7 @@ const SIGNED_OUT: HomeData = {
   partnerName: null,
   daysToNextVisit: null,
   nextDate: null,
+  anniversary: null,
 };
 
 // A plain "YYYY-MM-DD" is read as UTC by `new Date(...)`, which lands on the
@@ -51,6 +53,7 @@ export async function loadHomeData(): Promise<HomeData> {
       partnerName: null,
       daysToNextVisit: null,
       nextDate: null,
+      anniversary: null,
     };
 
     const { data: profile } = await supabase
@@ -63,13 +66,15 @@ export async function loadHomeData(): Promise<HomeData> {
 
     const { data: relationships } = await supabase
       .from("relationships")
-      .select("id, user_one, user_two")
+      .select("id, user_one, user_two, anniversary")
       .or(`user_one.eq.${user.id},user_two.eq.${user.id}`)
       .limit(1);
 
     const relationship = relationships?.[0];
 
     if (!relationship) return result;
+
+    result.anniversary = relationship.anniversary ?? null;
 
     const partnerId =
       relationship.user_one === user.id

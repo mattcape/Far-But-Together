@@ -23,6 +23,7 @@ import CloudIntro from "@/components/CloudIntro";
 import CloudShape from "@/components/CloudShape";
 import ConnectionArc from "@/components/ConnectionArc";
 import ScrollMemory from "@/components/ScrollMemory";
+import TogetherClock from "@/components/TogetherClock";
 import { loadHomeData, type HomeData } from "@/lib/relationship";
 import { countUnread, ensureTeamMessage } from "@/lib/messages";
 import { supabase } from "@/lib/supabase";
@@ -184,6 +185,8 @@ function Status({ data }: { data: HomeData }) {
             </Link>
           </p>
         ) : null}
+
+        {data.anniversary ? <TogetherClock since={data.anniversary} compact /> : null}
       </>
     );
   }
