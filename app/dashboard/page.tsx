@@ -8,6 +8,7 @@ import PageFrame from "@/components/PageFrame";
 import MoodChart, { type MoodSeries } from "@/components/MoodChart";
 import WelcomeTour from "@/components/WelcomeTour";
 import TogetherClock from "@/components/TogetherClock";
+import { MilestoneBanner, NextMilestone } from "@/components/Milestones";
 import {
   countUnread,
   ensureTeamMessage,
@@ -378,6 +379,10 @@ export default function Dashboard() {
       }
       width="max-w-4xl"
     >
+      {anniversary ? (
+        <MilestoneBanner since={anniversary} partnerName={significantOther} />
+      ) : null}
+
       {unread !== null && unread > 0 ? (
         <Link
           href="/mailbox"
@@ -415,6 +420,7 @@ export default function Dashboard() {
               <p className="mt-4 text-ink/80">
                 since {format(parseVisitDate(anniversary), "MMMM d, yyyy")}
               </p>
+              <NextMilestone since={anniversary} />
               <button
                 type="button"
                 onClick={() => {

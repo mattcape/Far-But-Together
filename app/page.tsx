@@ -26,6 +26,7 @@ import CloudShape from "@/components/CloudShape";
 import ConnectionArc from "@/components/ConnectionArc";
 import ScrollMemory from "@/components/ScrollMemory";
 import TogetherClock from "@/components/TogetherClock";
+import { todaysMilestones } from "@/lib/milestones";
 import { loadHomeData, type HomeData } from "@/lib/relationship";
 import { countUnread, ensureTeamMessage } from "@/lib/messages";
 import { supabase } from "@/lib/supabase";
@@ -201,6 +202,12 @@ function Status({ data }: { data: HomeData }) {
         ) : null}
 
         {data.anniversary ? <TogetherClock since={data.anniversary} compact /> : null}
+
+        {data.anniversary && todaysMilestones(data.anniversary).length > 0 ? (
+          <p className="mt-1 text-lg font-semibold text-rose-deep">
+            Happy {todaysMilestones(data.anniversary).join(" and ")}!
+          </p>
+        ) : null}
       </>
     );
   }
