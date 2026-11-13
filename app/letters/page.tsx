@@ -214,7 +214,7 @@ export default function LettersPage() {
 
             {forMe.length === 0 ? (
               <p className="text-ink/75">
-                {partnerName} hasn&apos;t left you a letter yet.
+                {`${partnerName} hasn't left you a letter yet.`}
               </p>
             ) : (
               <ul className="space-y-4">

@@ -16,45 +16,56 @@ export type Recipient = {
   isPartner: boolean;
 };
 
-const ISSUED_KEY = "fbt-team-message-issued";
-let issuing: Promise<void> | null = null;
+const ISSUED_KEY = "fbt-team-message-day";
+let running: Promise<void> | null = null;
 
-// Once per visit (browser session), drops a fresh uplifting message from the
-// team into the signed-in person's mailbox, so there is always something new.
-// Quietly does nothing if the mailbox tables aren't set up yet.
+// The team's message changes at 4 am, so before 4 am it's still "yesterday".
+function messageDay(): string {
+  const d = new Date(Date.now() - 4 * 60 * 60 * 1000);
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+// Makes sure today's message from the team is in the mailbox. A new one
+// arrives at 4 am each day and replaces yesterday's. Quietly does nothing if
+// the mailbox isn't set up yet.
 export function ensureTeamMessage(): Promise<void> {
-  if (issuing) return issuing;
+  if (running) return running;
 
-  try {
-    if (sessionStorage.getItem(ISSUED_KEY)) return Promise.resolve();
-  } catch {
-    // Storage blocked: fall through and issue once for this page load.
-  }
+  running = (async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-  issuing = (async () => {
-    const { error } = await supabase.rpc("issue_team_message");
+    const userId = session?.user.id;
+
+    if (!userId) return;
+
+    const key = `${userId}:${messageDay()}`;
+
+    try {
+      if (localStorage.getItem(ISSUED_KEY) === key) return;
+    } catch {
+      // Storage blocked: ask the server; it only adds one per day anyway.
+    }
+
+    const { error } = await supabase.rpc("issue_team_message", {
+      p_tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+    });
 
     if (!error) {
       try {
-        sessionStorage.setItem(ISSUED_KEY, "1");
+        localStorage.setItem(ISSUED_KEY, key);
       } catch {
         // Ignore.
       }
     }
-  })();
+  })().finally(() => {
+    running = null;
+  });
 
-  return issuing;
-}
-
-// Clears the once-per-visit marker, so the next visit gets a new message.
-export function resetTeamMessageMarker() {
-  issuing = null;
-
-  try {
-    sessionStorage.removeItem(ISSUED_KEY);
-  } catch {
-    // Ignore.
-  }
+  return running;
 }
 
 // null means the mailbox isn't set up (or the count couldn't be read).
