@@ -175,3 +175,62 @@ export function isMissingTable(
     /does not exist|could not find the table/i.test(error.message ?? "")
   );
 }
+
+export type Couple =
+  | { status: "signed-out" }
+  | { status: "none"; userId: string }
+  | {
+      status: "ok";
+      userId: string;
+      relationshipId: string | number;
+      partnerId: string;
+      partnerName: string;
+    };
+
+// Like getMyRelationship, plus who your partner is.
+export async function getCouple(): Promise<Couple> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { status: "signed-out" };
+
+  const { data: relationships } = await supabase
+    .from("relationships")
+    .select("id, user_one, user_two")
+    .or(`user_one.eq.${user.id},user_two.eq.${user.id}`)
+    .limit(1);
+
+  const rel = relationships?.[0];
+
+  if (!rel) return { status: "none", userId: user.id };
+
+  const partnerId = rel.user_one === user.id ? rel.user_two : rel.user_one;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("id", partnerId)
+    .maybeSingle();
+
+  return {
+    status: "ok",
+    userId: user.id,
+    relationshipId: rel.id,
+    partnerId,
+    partnerName: profile?.display_name || "Your partner",
+  };
+}
+
+// True when a query failed because a table or function isn't set up yet.
+export function isMissingSetup(
+  error: { code?: string; message?: string } | null
+): boolean {
+  if (!error) return false;
+
+  return (
+    isMissingTable(error) ||
+    error.code === "PGRST202" ||
+    /could not find the function/i.test(error.message ?? "")
+  );
+}

@@ -7,6 +7,8 @@ import {
   CalendarHeart,
   HeartHandshake,
   Images,
+  MailOpen,
+  MessageCircleQuestion,
   ListChecks,
   LayoutDashboard,
   Mail,
@@ -63,6 +65,18 @@ const PLAN_AND_REMEMBER: Destination[] = [
     title: "Dates",
     description: "Plans for the time you spend together.",
     icon: CalendarHeart,
+  },
+  {
+    href: "/letters",
+    title: "Open when letters",
+    description: "Sealed letters for just the right moment.",
+    icon: MailOpen,
+  },
+  {
+    href: "/question",
+    title: "Question of the day",
+    description: "One question for both of you, every day.",
+    icon: MessageCircleQuestion,
   },
   {
     href: "/bucket-list",
