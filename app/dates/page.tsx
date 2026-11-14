@@ -6,6 +6,7 @@ import PageFrame from "@/components/PageFrame";
 import SharedPageState from "@/components/SharedPageState";
 import { supabase } from "@/lib/supabase";
 import { getCouple, isMissingTable, parseDay } from "@/lib/relationship";
+import { DATE_IDEAS } from "@/lib/dateIdeas";
 import { CARD, FOCUS, INPUT, PRIMARY_BUTTON } from "@/lib/ui";
 
 type DateItem = {
@@ -139,6 +140,16 @@ export default function DatesPage() {
     };
   }, []);
 
+  // Cycle through the ideas in a shuffled order so repeats are rare.
+  function suggestIdea() {
+    const pool = DATE_IDEAS.filter((idea) => idea.title !== title);
+    const idea = pool[Math.floor(Math.random() * pool.length)];
+
+    setTitle(idea.title);
+    setNotes(idea.notes);
+    setError("");
+  }
+
   async function addDate(e: FormEvent) {
     e.preventDefault();
     setError("");
@@ -216,7 +227,16 @@ export default function DatesPage() {
       ) : (
         <>
           <form onSubmit={addDate} className={`${CARD} p-6`}>
-            <h2 className="font-display text-2xl text-ink">Add a date</h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-display text-2xl text-ink">Add a date</h2>
+              <button
+                type="button"
+                onClick={suggestIdea}
+                className={`rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-ink ring-1 ring-ink/15 hover:bg-blush ${FOCUS}`}
+              >
+                Give me an idea
+              </button>
+            </div>
 
             <label
               htmlFor="date-title"
