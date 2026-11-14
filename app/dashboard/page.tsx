@@ -5,6 +5,7 @@ import { differenceInCalendarDays, format } from "date-fns";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import PageFrame from "@/components/PageFrame";
+import ScrollMemory from "@/components/ScrollMemory";
 import ToolLinks from "@/components/ToolLinks";
 import MoodChart, { type MoodSeries } from "@/components/MoodChart";
 import WelcomeTour from "@/components/WelcomeTour";
@@ -371,6 +372,7 @@ export default function Dashboard() {
   return (
     <div className="dash">
     <WelcomeTour />
+    <ScrollMemory storageKey="fbt-dashboard-scroll" />
     <PageFrame
       title={`${greeting}, ${name}`}
       subtitle={
