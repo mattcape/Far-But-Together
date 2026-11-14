@@ -5,6 +5,7 @@ import { differenceInCalendarDays, format } from "date-fns";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import PageFrame from "@/components/PageFrame";
+import ToolLinks from "@/components/ToolLinks";
 import MoodChart, { type MoodSeries } from "@/components/MoodChart";
 import WelcomeTour from "@/components/WelcomeTour";
 import TogetherClock from "@/components/TogetherClock";
@@ -556,6 +557,8 @@ export default function Dashboard() {
           {nudge}
         </p>
       ) : null}
+
+      <ToolLinks />
     </PageFrame>
     </div>
   );

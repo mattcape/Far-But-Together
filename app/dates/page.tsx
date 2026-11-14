@@ -5,11 +5,7 @@ import { differenceInCalendarDays, format } from "date-fns";
 import PageFrame from "@/components/PageFrame";
 import SharedPageState from "@/components/SharedPageState";
 import { supabase } from "@/lib/supabase";
-import {
-  getMyRelationship,
-  isMissingTable,
-  parseDay,
-} from "@/lib/relationship";
+import { getCouple, isMissingTable, parseDay } from "@/lib/relationship";
 import { CARD, FOCUS, INPUT, PRIMARY_BUTTON } from "@/lib/ui";
 
 type DateItem = {
@@ -17,7 +13,10 @@ type DateItem = {
   title: string;
   date_on: string;
   notes: string | null;
+  created_by: string | null;
 };
+
+const COLUMNS = "id, title, date_on, notes, created_by";
 
 type View = "loading" | "no-relationship" | "needs-setup" | "ready";
 
@@ -34,10 +33,12 @@ function whenLabel(dateOn: string): string {
 function DateRow({
   item,
   onDelete,
+  addedBy,
   muted,
 }: {
   item: DateItem;
   onDelete: (item: DateItem) => void;
+  addedBy: string | null;
   muted?: boolean;
 }) {
   return (
@@ -58,6 +59,9 @@ function DateRow({
           <p className="mt-2 whitespace-pre-wrap leading-relaxed text-ink/75">
             {item.notes}
           </p>
+        ) : null}
+        {addedBy ? (
+          <p className="mt-2 text-sm text-ink/70">Created by {addedBy}</p>
         ) : null}
       </div>
 
@@ -80,6 +84,9 @@ export default function DatesPage() {
     string | number | null
   >(null);
   const [items, setItems] = useState<DateItem[]>([]);
+  const [partner, setPartner] = useState<{ id: string; name: string } | null>(
+    null
+  );
 
   const [title, setTitle] = useState("");
   const [dateOn, setDateOn] = useState("");
@@ -91,7 +98,7 @@ export default function DatesPage() {
     let cancelled = false;
 
     async function load() {
-      const mine = await getMyRelationship();
+      const mine = await getCouple();
 
       if (cancelled) return;
 
@@ -107,7 +114,7 @@ export default function DatesPage() {
 
       const { data, error } = await supabase
         .from("dates")
-        .select("id, title, date_on, notes")
+        .select(COLUMNS)
         .eq("relationship_id", mine.relationshipId)
         .order("date_on", { ascending: true });
 
@@ -119,6 +126,7 @@ export default function DatesPage() {
       }
 
       setUserId(mine.userId);
+      setPartner({ id: mine.partnerId, name: mine.partnerName });
       setRelationshipId(mine.relationshipId);
       setItems(data ?? []);
       setView("ready");
@@ -153,7 +161,7 @@ export default function DatesPage() {
         date_on: dateOn,
         notes: notes.trim() || null,
       })
-      .select("id, title, date_on, notes")
+      .select(COLUMNS)
       .single();
 
     setBusy(false);
@@ -185,6 +193,13 @@ export default function DatesPage() {
     }
 
     setItems((current) => current.filter((i) => i.id !== item.id));
+  }
+
+  function addedBy(item: DateItem): string | null {
+    if (!item.created_by) return null;
+    if (item.created_by === userId) return "you";
+    if (item.created_by === partner?.id) return partner.name;
+    return null;
   }
 
   const today = format(new Date(), "yyyy-MM-dd");
@@ -276,7 +291,12 @@ export default function DatesPage() {
           ) : (
             <ul className="space-y-4">
               {upcoming.map((item) => (
-                <DateRow key={item.id} item={item} onDelete={deleteDate} />
+                <DateRow
+                  key={item.id}
+                  item={item}
+                  onDelete={deleteDate}
+                  addedBy={addedBy(item)}
+                />
               ))}
             </ul>
           )}
@@ -292,6 +312,7 @@ export default function DatesPage() {
                     key={item.id}
                     item={item}
                     onDelete={deleteDate}
+                    addedBy={addedBy(item)}
                     muted
                   />
                 ))}

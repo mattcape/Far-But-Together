@@ -5,11 +5,7 @@ import { format } from "date-fns";
 import PageFrame from "@/components/PageFrame";
 import SharedPageState from "@/components/SharedPageState";
 import { supabase } from "@/lib/supabase";
-import {
-  getMyRelationship,
-  isMissingTable,
-  parseDay,
-} from "@/lib/relationship";
+import { getCouple, isMissingTable, parseDay } from "@/lib/relationship";
 import { shrinkImage } from "@/lib/image";
 import { CARD, FOCUS, INPUT, PRIMARY_BUTTON } from "@/lib/ui";
 
@@ -19,11 +15,12 @@ type Memory = {
   body: string | null;
   memory_date: string;
   photo_path: string | null;
+  created_by: string | null;
 };
 
 type View = "loading" | "no-relationship" | "needs-setup" | "ready";
 
-const COLUMNS = "id, title, body, memory_date, photo_path";
+const COLUMNS = "id, title, body, memory_date, photo_path, created_by";
 const BUCKET = "memory-photos";
 
 // Photos are private; each gets a temporary link to show it.
@@ -55,6 +52,9 @@ export default function MemoriesPage() {
   const [relationshipId, setRelationshipId] = useState<
     string | number | null
   >(null);
+  const [partner, setPartner] = useState<{ id: string; name: string } | null>(
+    null
+  );
   const [memories, setMemories] = useState<Memory[]>([]);
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [photo, setPhoto] = useState<File | null>(null);
@@ -70,7 +70,7 @@ export default function MemoriesPage() {
     let cancelled = false;
 
     async function load() {
-      const mine = await getMyRelationship();
+      const mine = await getCouple();
 
       if (cancelled) return;
 
@@ -98,6 +98,7 @@ export default function MemoriesPage() {
       }
 
       setUserId(mine.userId);
+      setPartner({ id: mine.partnerId, name: mine.partnerName });
       setRelationshipId(mine.relationshipId);
       const rows = data ?? [];
       const links = await signedUrls(rows);
@@ -332,6 +333,14 @@ export default function MemoriesPage() {
                     {memory.body ? (
                       <p className="mt-3 whitespace-pre-wrap leading-relaxed text-ink/80">
                         {memory.body}
+                      </p>
+                    ) : null}
+
+                    {memory.created_by === userId ||
+                    memory.created_by === partner?.id ? (
+                      <p className="mt-3 text-sm text-ink/70">
+                        Created by{" "}
+                        {memory.created_by === userId ? "you" : partner?.name}
                       </p>
                     ) : null}
                   </div>
