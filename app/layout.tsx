@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Figtree, Fraunces, Young_Serif } from "next/font/google";
 import AuthGuard from "@/components/AuthGuard";
+import Footer from "@/components/Footer";
 import NavBar from "@/components/NavBar";
 import "./globals.css";
 
@@ -66,6 +67,7 @@ export default function RootLayout({
         </a>
         <NavBar />
         <AuthGuard>{children}</AuthGuard>
+        <Footer />
       </body>
     </html>
   );

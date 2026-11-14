@@ -5,7 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import PageFrame from "@/components/PageFrame";
 import SharedPageState from "@/components/SharedPageState";
 import { supabase } from "@/lib/supabase";
-import { isMissingTable } from "@/lib/relationship";
+import { isMissingSetup, isMissingTable } from "@/lib/relationship";
 import { CARD, FOCUS, INPUT, PRIMARY_BUTTON } from "@/lib/ui";
 
 type Post = {
@@ -38,32 +38,20 @@ export default function CommunityPage() {
 
       if (cancelled || !user) return;
 
-      const { data, error: loadError } = await supabase
-        .from("community_posts")
-        .select("id, author_id, body, created_at")
-        .order("created_at", { ascending: false })
-        .limit(100);
+      const { data, error: loadError } = await supabase.rpc("community_feed");
 
       if (cancelled) return;
 
-      if (isMissingTable(loadError)) {
+      if (isMissingSetup(loadError)) {
         setNeedsSetup(true);
         setReady(true);
         return;
       }
 
-      const rows = data ?? [];
-      const ids = [...new Set(rows.map((r) => r.author_id))];
+      const rows = (data ?? []) as (Post & { author_name: string })[];
       const lookup: Record<string, string> = {};
 
-      if (ids.length > 0) {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("id, display_name")
-          .in("id", ids);
-
-        for (const p of profiles ?? []) lookup[p.id] = p.display_name;
-      }
+      for (const r of rows) lookup[r.author_id] = r.author_name;
 
       if (cancelled) return;
 
@@ -176,7 +164,7 @@ export default function CommunityPage() {
       {!ready ? (
         <SharedPageState kind="loading" />
       ) : needsSetup ? (
-        <SharedPageState kind="needs-setup" sqlFile="community.sql" />
+        <SharedPageState kind="needs-setup" sqlFile="privacy.sql" />
       ) : (
         <>
           <form onSubmit={post} className={`${CARD} p-6`}>

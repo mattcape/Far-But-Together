@@ -11,6 +11,8 @@ const PUBLIC_PATHS = [
   "/register",
   "/forgot-password",
   "/reset-password",
+  "/privacy",
+  "/terms",
 ];
 
 // Sends logged-out visitors to /login when they open an inner page, and

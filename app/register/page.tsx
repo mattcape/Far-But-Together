@@ -115,6 +115,24 @@ export default function RegisterPage() {
         >
           {busy ? "Creating account..." : "Create account"}
         </button>
+
+        <p className="mt-4 text-center text-sm text-ink/75">
+          By creating an account you agree to the{" "}
+          <Link
+            href="/terms"
+            className={`font-semibold text-ink underline decoration-rose-deep decoration-2 underline-offset-4 ${FOCUS}`}
+          >
+            Terms of use
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/privacy"
+            className={`font-semibold text-ink underline decoration-rose-deep decoration-2 underline-offset-4 ${FOCUS}`}
+          >
+            Privacy policy
+          </Link>
+          .
+        </p>
       </form>
     </AuthCard>
   );
