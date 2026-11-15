@@ -13,6 +13,7 @@ import {
   Plane,
   Settings,
   Smile,
+  Sparkles,
   UserPlus,
   Users,
   type LucideIcon,
@@ -48,6 +49,12 @@ export const TOGETHER: Destination[] = [
 ];
 
 export const PLAN_AND_REMEMBER: Destination[] = [
+  {
+    href: "/recap",
+    title: "Your week",
+    description: "A look back at how the last seven days went.",
+    icon: Sparkles,
+  },
   {
     href: "/dates",
     title: "Dates",
