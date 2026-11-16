@@ -163,7 +163,7 @@ export default function BucketListPage() {
           type="button"
           onClick={() => remove(item)}
           aria-label={`Delete ${item.title}`}
-          className={`shrink-0 rounded-full px-3 py-1 text-sm font-semibold text-ink/70 hover:bg-white hover:text-rose-deep ${FOCUS}`}
+          className={`shrink-0 rounded-full px-3 py-2 text-sm font-semibold text-ink/70 hover:bg-white hover:text-rose-deep ${FOCUS}`}
         >
           Delete
         </button>

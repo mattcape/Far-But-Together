@@ -324,7 +324,7 @@ export default function SurprisesPage() {
                     type="button"
                     onClick={() => remove(s)}
                     aria-label={`Delete ${s.title}`}
-                    className={`shrink-0 rounded-full px-3 py-1 text-sm font-semibold text-ink/75 hover:bg-white hover:text-rose-deep ${FOCUS}`}
+                    className={`shrink-0 rounded-full px-3 py-2 text-sm font-semibold text-ink/75 hover:bg-white hover:text-rose-deep ${FOCUS}`}
                   >
                     Delete
                   </button>

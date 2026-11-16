@@ -77,7 +77,7 @@ function DateRow({
         type="button"
         onClick={() => onDelete(item)}
         aria-label={`Delete ${item.title}`}
-        className={`shrink-0 rounded-full px-3 py-1 text-sm font-semibold text-ink/70 hover:bg-white hover:text-rose-deep ${FOCUS}`}
+        className={`shrink-0 rounded-full px-3 py-2 text-sm font-semibold text-ink/70 hover:bg-white hover:text-rose-deep ${FOCUS}`}
       >
         Delete
       </button>
@@ -380,22 +380,20 @@ export default function DatesPage() {
               </p>
             ) : null}
 
-            <button
-              type="submit"
-              disabled={busy}
-              className={`${PRIMARY_BUTTON} mt-5`}
-            >
-              {busy ? "Saving..." : "Add date"}
-            </button>
-            {ideas !== null ? (
-              <button
-                type="button"
-                onClick={saveIdea}
-                className={`ml-3 mt-5 rounded-full bg-white/80 px-7 py-3 font-semibold text-ink ring-1 ring-ink/15 hover:bg-white ${FOCUS}`}
-              >
-                Save for later
+            <div className="mt-5 flex flex-wrap gap-3">
+              <button type="submit" disabled={busy} className={PRIMARY_BUTTON}>
+                {busy ? "Saving..." : "Add date"}
               </button>
-            ) : null}
+              {ideas !== null ? (
+                <button
+                  type="button"
+                  onClick={saveIdea}
+                  className={`rounded-full bg-white/80 px-7 py-3 font-semibold text-ink ring-1 ring-ink/15 hover:bg-white ${FOCUS}`}
+                >
+                  Save for later
+                </button>
+              ) : null}
+            </div>
           </form>
 
           {ideas !== null && ideas.length > 0 ? (
@@ -425,7 +423,7 @@ export default function DatesPage() {
                         <button
                           type="button"
                           onClick={() => planIdea(idea)}
-                          className={`rounded-full px-3 py-1 text-ink hover:bg-white ${FOCUS}`}
+                          className={`rounded-full px-3 py-2 text-ink hover:bg-white ${FOCUS}`}
                         >
                           Plan it
                         </button>
@@ -433,7 +431,7 @@ export default function DatesPage() {
                       <button
                         type="button"
                         onClick={() => toggleDone(idea)}
-                        className={`rounded-full px-3 py-1 text-ink/75 hover:bg-white ${FOCUS}`}
+                        className={`rounded-full px-3 py-2 text-ink/75 hover:bg-white ${FOCUS}`}
                       >
                         {idea.done_on ? "Not done" : "Mark done"}
                       </button>
@@ -441,7 +439,7 @@ export default function DatesPage() {
                         type="button"
                         onClick={() => deleteIdea(idea)}
                         aria-label={`Delete ${idea.title}`}
-                        className={`rounded-full px-3 py-1 text-ink/75 hover:bg-white hover:text-rose-deep ${FOCUS}`}
+                        className={`rounded-full px-3 py-2 text-ink/75 hover:bg-white hover:text-rose-deep ${FOCUS}`}
                       >
                         Delete
                       </button>

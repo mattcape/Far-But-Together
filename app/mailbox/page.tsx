@@ -388,7 +388,7 @@ export default function MailboxPage() {
                       key={s}
                       type="button"
                       onClick={() => setBody(s)}
-                      className={`rounded-full bg-white px-3 py-1 text-sm text-ink ring-1 ring-ink/15 hover:bg-blush ${FOCUS}`}
+                      className={`rounded-full bg-white px-3 py-2 text-sm text-ink ring-1 ring-ink/15 hover:bg-blush ${FOCUS}`}
                     >
                       {s}
                     </button>

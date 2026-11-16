@@ -101,27 +101,36 @@ export default function NavBar() {
   return (
     <nav
       aria-label="Main"
-      className="flex items-center justify-between gap-4 border-b border-ink/10 bg-white/80 px-6 py-3 backdrop-blur"
+      className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-ink/10 bg-white/80 px-4 py-2 backdrop-blur sm:px-6 sm:py-3"
     >
       <Link
         href="/"
-        className={`font-display text-xl text-ink ${FOCUS}`}
+        className={`whitespace-nowrap py-2 font-display text-lg text-ink sm:text-xl ${FOCUS}`}
       >
         Far But Together
       </Link>
 
-      <div className="flex items-center gap-5 text-sm font-semibold text-ink">
+      <div className="flex items-center gap-3 text-sm font-semibold text-ink sm:gap-5">
         {signedIn === false ? (
-          <Link href="/login" className={`hover:underline ${FOCUS}`}>
+          <Link
+            href="/login"
+            className={`whitespace-nowrap py-2 hover:underline ${FOCUS}`}
+          >
             Log in
           </Link>
         ) : (
           <>
-            <Link href="/dashboard" className={`hover:underline ${FOCUS}`}>
+            <Link
+              href="/dashboard"
+              className={`whitespace-nowrap py-2 hover:underline ${FOCUS}`}
+            >
               Dashboard
             </Link>
             {signedIn && unread !== null ? (
-              <Link href="/mailbox" className={`hover:underline ${FOCUS}`}>
+              <Link
+                href="/mailbox"
+                className={`whitespace-nowrap py-2 hover:underline ${FOCUS}`}
+              >
                 Mailbox
                 {unread > 0 ? (
                   <span className="ml-1.5 rounded-full bg-rose-deep px-2 py-0.5 text-xs text-white">
@@ -134,7 +143,7 @@ export default function NavBar() {
               <button
                 type="button"
                 onClick={signOut}
-                className={`rounded-full bg-rose-deep px-4 py-1.5 text-white hover:brightness-110 ${FOCUS}`}
+                className={`whitespace-nowrap rounded-full bg-rose-deep px-4 py-2 text-white hover:brightness-110 ${FOCUS}`}
               >
                 Sign out
               </button>

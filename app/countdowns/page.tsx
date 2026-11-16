@@ -250,7 +250,7 @@ export default function CountdownsPage() {
                         <button
                           type="button"
                           onClick={() => copy(item)}
-                          className={`rounded-full px-3 py-1 text-ink/75 hover:bg-white hover:text-ink ${FOCUS}`}
+                          className={`rounded-full px-3 py-2 text-ink/75 hover:bg-white hover:text-ink ${FOCUS}`}
                         >
                           Copy to share
                         </button>
@@ -258,7 +258,7 @@ export default function CountdownsPage() {
                           type="button"
                           onClick={() => remove(item)}
                           aria-label={`Delete ${item.title}`}
-                          className={`rounded-full px-3 py-1 text-ink/75 hover:bg-white hover:text-rose-deep ${FOCUS}`}
+                          className={`rounded-full px-3 py-2 text-ink/75 hover:bg-white hover:text-rose-deep ${FOCUS}`}
                         >
                           Delete
                         </button>
@@ -304,7 +304,7 @@ export default function CountdownsPage() {
                       type="button"
                       onClick={() => remove(item)}
                       aria-label={`Delete ${item.title}`}
-                      className={`rounded-full px-3 py-1 text-sm font-semibold text-ink/75 hover:text-rose-deep ${FOCUS}`}
+                      className={`rounded-full px-3 py-2 text-sm font-semibold text-ink/75 hover:text-rose-deep ${FOCUS}`}
                     >
                       Delete
                     </button>

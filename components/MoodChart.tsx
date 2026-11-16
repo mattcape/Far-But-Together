@@ -4,9 +4,9 @@ type Point = { day: number; mood: number };
 
 export type MoodSeries = { name: string; points: Point[] };
 
-const W = 640;
-const H = 220;
-const PAD = { left: 36, right: 12, top: 12, bottom: 28 };
+const W = 420;
+const H = 240;
+const PAD = { left: 30, right: 12, top: 14, bottom: 32 };
 
 export default function MoodChart({
   days,
@@ -38,7 +38,7 @@ export default function MoodChart({
   const summary = series
     .map(
       ({ s }) =>
-        `${s.name}: ${s.points.length} check-in${s.points.length === 1 ? "" : "s"}`
+        `${s.name}: ${s.points.length} check-in${s.points.length === 1 ? "" : "s"}`,
     )
     .join("; ");
 
@@ -60,26 +60,26 @@ export default function MoodChart({
               className="stroke-ink/15"
             />
             <text
-              x={PAD.left - 8}
-              y={y(m) + 4}
+              x={PAD.left - 6}
+              y={y(m) + 5}
               textAnchor="end"
               className="fill-ink/70"
-              fontSize="11"
+              fontSize="14"
             >
               {m}
             </text>
           </g>
         ))}
 
-        <text x={PAD.left} y={H - 8} className="fill-ink/70" fontSize="11">
+        <text x={PAD.left} y={H - 10} className="fill-ink/70" fontSize="14">
           {days} days ago
         </text>
         <text
           x={W - PAD.right}
-          y={H - 8}
+          y={H - 10}
           textAnchor="end"
           className="fill-ink/70"
-          fontSize="11"
+          fontSize="14"
         >
           Today
         </text>
@@ -102,19 +102,19 @@ export default function MoodChart({
                   key={p.day}
                   cx={x(p.day)}
                   cy={y(p.mood)}
-                  r="4"
+                  r="5"
                   fill="currentColor"
                 />
               ) : (
                 <rect
                   key={p.day}
-                  x={x(p.day) - 4}
-                  y={y(p.mood) - 4}
-                  width="8"
-                  height="8"
+                  x={x(p.day) - 5}
+                  y={y(p.mood) - 5}
+                  width="10"
+                  height="10"
                   fill="currentColor"
                 />
-              )
+              ),
             )}
           </g>
         ))}
@@ -122,8 +122,20 @@ export default function MoodChart({
 
       <figcaption className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-ink/80">
         <span className="flex items-center gap-2">
-          <svg width="28" height="10" aria-hidden="true" className="text-rose-deep">
-            <line x1="0" x2="28" y1="5" y2="5" stroke="currentColor" strokeWidth="2.5" />
+          <svg
+            width="28"
+            height="10"
+            aria-hidden="true"
+            className="text-rose-deep"
+          >
+            <line
+              x1="0"
+              x2="28"
+              y1="5"
+              y2="5"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            />
             <circle cx="14" cy="5" r="4" fill="currentColor" />
           </svg>
           {mine.name}
@@ -131,7 +143,15 @@ export default function MoodChart({
         {theirs ? (
           <span className="flex items-center gap-2">
             <svg width="28" height="10" aria-hidden="true" className="text-ink">
-              <line x1="0" x2="28" y1="5" y2="5" stroke="currentColor" strokeWidth="2.5" strokeDasharray="6 4" />
+              <line
+                x1="0"
+                x2="28"
+                y1="5"
+                y2="5"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeDasharray="6 4"
+              />
               <rect x="10" y="1" width="8" height="8" fill="currentColor" />
             </svg>
             {theirs.name}

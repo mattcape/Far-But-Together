@@ -346,7 +346,7 @@ export default function LettersPage() {
                         type="button"
                         onClick={() => remove(l)}
                         aria-label={`Delete the letter for when ${l.occasion}`}
-                        className={`shrink-0 rounded-full px-3 py-1 text-sm font-semibold text-ink/70 hover:bg-white hover:text-rose-deep ${FOCUS}`}
+                        className={`shrink-0 rounded-full px-3 py-2 text-sm font-semibold text-ink/70 hover:bg-white hover:text-rose-deep ${FOCUS}`}
                       >
                         Delete
                       </button>

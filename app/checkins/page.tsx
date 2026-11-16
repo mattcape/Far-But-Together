@@ -65,7 +65,7 @@ export default function CheckinsPage() {
           max={10}
           value={mood}
           onChange={(e) => setMood(Number(e.target.value))}
-          className="w-full accent-rose-deep"
+          className="h-9 w-full cursor-pointer accent-rose-deep"
         />
 
         <label
