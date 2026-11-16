@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import PageFrame from "@/components/PageFrame";
 import SharedPageState from "@/components/SharedPageState";
 import { supabase } from "@/lib/supabase";
 import { getCouple, isMissingTable } from "@/lib/relationship";
+import { longestStreak } from "@/lib/streaks";
 import { CARD, FOCUS } from "@/lib/ui";
 
 type Row = { user_id: string; mood: number; created_at: string };
@@ -23,32 +24,6 @@ type Review = {
 };
 
 type View = "loading" | "no-relationship" | "ready";
-
-// Longest run of consecutive days where at least one of you checked in.
-function longestStreak(days: string[]): number {
-  const sorted = [...new Set(days)].sort();
-  let best = 0;
-  let run = 0;
-  let previous: Date | null = null;
-
-  for (const d of sorted) {
-    const current = parseISO(d);
-
-    if (
-      previous &&
-      Math.round((current.getTime() - previous.getTime()) / 86400000) === 1
-    ) {
-      run += 1;
-    } else {
-      run = 1;
-    }
-
-    best = Math.max(best, run);
-    previous = current;
-  }
-
-  return best;
-}
 
 async function countIn(
   table: string,

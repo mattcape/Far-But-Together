@@ -5,6 +5,7 @@ import PageFrame from "@/components/PageFrame";
 import { supabase } from "@/lib/supabase";
 import { saveDisplayName } from "@/lib/profile";
 import AppearanceSettings from "@/components/AppearanceSettings";
+import DataExport from "@/components/DataExport";
 import DeleteAccount from "@/components/DeleteAccount";
 import RelationshipSettings from "@/components/RelationshipSettings";
 import TimezoneSettings from "@/components/TimezoneSettings";
@@ -228,6 +229,8 @@ export default function SettingsPage() {
         <AppearanceSettings />
 
         <RelationshipSettings />
+
+        <DataExport />
 
         <DeleteAccount />
 
