@@ -136,7 +136,7 @@ export default function DatesPage() {
 
       // Saved ideas are optional; the section stays hidden until its table exists.
       const { data: saved, error: savedError } = await supabase
-        .from("date_ideas")
+        .from("couple_date_ideas")
         .select("id, title, notes, done_on")
         .eq("relationship_id", mine.relationshipId)
         .order("created_at", { ascending: false });
@@ -179,7 +179,7 @@ export default function DatesPage() {
     if (!userId || relationshipId === null) return;
 
     const { data, error: saveError } = await supabase
-      .from("date_ideas")
+      .from("couple_date_ideas")
       .insert({
         relationship_id: relationshipId,
         created_by: userId,
@@ -209,7 +209,7 @@ export default function DatesPage() {
     const doneOn = idea.done_on ? null : format(new Date(), "yyyy-MM-dd");
 
     const { error: updateError } = await supabase
-      .from("date_ideas")
+      .from("couple_date_ideas")
       .update({ done_on: doneOn })
       .eq("id", idea.id);
 
@@ -227,7 +227,7 @@ export default function DatesPage() {
 
   async function deleteIdea(idea: SavedIdea) {
     const { error: deleteError } = await supabase
-      .from("date_ideas")
+      .from("couple_date_ideas")
       .delete()
       .eq("id", idea.id);
 

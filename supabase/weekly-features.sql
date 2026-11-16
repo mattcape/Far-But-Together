@@ -28,7 +28,7 @@ begin
   $f$, id_type);
 
   execute format($f$
-    create table if not exists public.date_ideas (
+    create table if not exists public.couple_date_ideas (
       id uuid primary key default gen_random_uuid(),
       relationship_id %s not null
         references public.relationships(id) on delete cascade,
@@ -80,7 +80,7 @@ declare
   t text;
   who text;
 begin
-  foreach t in array array['date_ideas', 'countdowns'] loop
+  foreach t in array array['couple_date_ideas', 'countdowns'] loop
     execute format('alter table public.%I enable row level security', t);
 
     execute format('drop policy if exists "partners read" on public.%I', t);
@@ -247,5 +247,5 @@ grant execute on function public.open_surprise(uuid, text) to authenticated;
 select tablename, policyname, cmd, roles
   from pg_policies
  where schemaname = 'public'
-   and tablename in ('daily_photos', 'date_ideas', 'countdowns', 'surprises')
+   and tablename in ('daily_photos', 'couple_date_ideas', 'countdowns', 'surprises')
  order by tablename, policyname;
