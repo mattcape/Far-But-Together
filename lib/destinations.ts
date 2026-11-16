@@ -14,6 +14,10 @@ import {
   Settings,
   Smile,
   Sparkles,
+  Camera,
+  Timer,
+  Gift,
+  Trophy,
   UserPlus,
   Users,
   type LucideIcon,
@@ -49,6 +53,30 @@ export const TOGETHER: Destination[] = [
 ];
 
 export const PLAN_AND_REMEMBER: Destination[] = [
+  {
+    href: "/photos",
+    title: "Photo of the day",
+    description: "One photo a day, from your world to theirs.",
+    icon: Camera,
+  },
+  {
+    href: "/countdowns",
+    title: "Countdowns",
+    description: "Count down to trips, birthdays and big days.",
+    icon: Timer,
+  },
+  {
+    href: "/surprises",
+    title: "Surprises",
+    description: "Schedule a message to unlock on a day you choose.",
+    icon: Gift,
+  },
+  {
+    href: "/year",
+    title: "Year in review",
+    description: "Your year together, in numbers.",
+    icon: Trophy,
+  },
   {
     href: "/recap",
     title: "Your week",

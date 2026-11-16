@@ -5,6 +5,7 @@ import { differenceInCalendarDays, format } from "date-fns";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import PageFrame from "@/components/PageFrame";
+import Nudges from "@/components/Nudges";
 import ScrollMemory from "@/components/ScrollMemory";
 import ToolLinks from "@/components/ToolLinks";
 import MoodChart, { type MoodSeries } from "@/components/MoodChart";
@@ -397,6 +398,12 @@ export default function Dashboard() {
           <span className="font-semibold text-rose-deep">Open mailbox</span>
         </Link>
       ) : null}
+
+      <Nudges
+        relationshipId={relationshipId}
+        checkedInToday={checkedInToday}
+        visitDate={visitDate}
+      />
 
       <section className={`${CARD} p-6 sm:p-8`}>
         <h2 className="font-display text-2xl text-ink">Next visit</h2>

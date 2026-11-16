@@ -19,6 +19,13 @@ type DateItem = {
 
 const COLUMNS = "id, title, date_on, notes, created_by";
 
+type SavedIdea = {
+  id: string;
+  title: string;
+  notes: string | null;
+  done_on: string | null;
+};
+
 type View = "loading" | "no-relationship" | "needs-setup" | "ready";
 
 function whenLabel(dateOn: string): string {
@@ -81,12 +88,13 @@ function DateRow({
 export default function DatesPage() {
   const [view, setView] = useState<View>("loading");
   const [userId, setUserId] = useState<string | null>(null);
-  const [relationshipId, setRelationshipId] = useState<
-    string | number | null
-  >(null);
+  const [relationshipId, setRelationshipId] = useState<string | number | null>(
+    null,
+  );
   const [items, setItems] = useState<DateItem[]>([]);
+  const [ideas, setIdeas] = useState<SavedIdea[] | null>(null);
   const [partner, setPartner] = useState<{ id: string; name: string } | null>(
-    null
+    null,
   );
 
   const [title, setTitle] = useState("");
@@ -126,6 +134,16 @@ export default function DatesPage() {
         return;
       }
 
+      // Saved ideas are optional; the section stays hidden until its table exists.
+      const { data: saved, error: savedError } = await supabase
+        .from("date_ideas")
+        .select("id, title, notes, done_on")
+        .eq("relationship_id", mine.relationshipId)
+        .order("created_at", { ascending: false });
+
+      if (cancelled) return;
+
+      setIdeas(savedError ? null : (saved ?? []));
       setUserId(mine.userId);
       setPartner({ id: mine.partnerId, name: mine.partnerName });
       setRelationshipId(mine.relationshipId);
@@ -148,6 +166,77 @@ export default function DatesPage() {
     setTitle(idea.title);
     setNotes(idea.notes);
     setError("");
+  }
+
+  async function saveIdea() {
+    setError("");
+
+    if (!title.trim()) {
+      setError("Add a title before saving an idea.");
+      return;
+    }
+
+    if (!userId || relationshipId === null) return;
+
+    const { data, error: saveError } = await supabase
+      .from("date_ideas")
+      .insert({
+        relationship_id: relationshipId,
+        created_by: userId,
+        title: title.trim(),
+        notes: notes.trim() || null,
+      })
+      .select("id, title, notes, done_on")
+      .single();
+
+    if (saveError || !data) {
+      setError(saveError?.message ?? "Couldn't save that idea.");
+      return;
+    }
+
+    setIdeas((current) => [data, ...(current ?? [])]);
+    setTitle("");
+    setNotes("");
+  }
+
+  function planIdea(idea: SavedIdea) {
+    setTitle(idea.title);
+    setNotes(idea.notes ?? "");
+    document.getElementById("date-title")?.scrollIntoView({ block: "center" });
+  }
+
+  async function toggleDone(idea: SavedIdea) {
+    const doneOn = idea.done_on ? null : format(new Date(), "yyyy-MM-dd");
+
+    const { error: updateError } = await supabase
+      .from("date_ideas")
+      .update({ done_on: doneOn })
+      .eq("id", idea.id);
+
+    if (updateError) {
+      setError(updateError.message);
+      return;
+    }
+
+    setIdeas((current) =>
+      (current ?? []).map((i) =>
+        i.id === idea.id ? { ...i, done_on: doneOn } : i,
+      ),
+    );
+  }
+
+  async function deleteIdea(idea: SavedIdea) {
+    const { error: deleteError } = await supabase
+      .from("date_ideas")
+      .delete()
+      .eq("id", idea.id);
+
+    if (deleteError) {
+      setError(deleteError.message);
+      return;
+    }
+
+    setIdeas((current) => (current ?? []).filter((i) => i.id !== idea.id));
   }
 
   async function addDate(e: FormEvent) {
@@ -183,7 +272,7 @@ export default function DatesPage() {
     }
 
     setItems((current) =>
-      [...current, data].sort((a, b) => a.date_on.localeCompare(b.date_on))
+      [...current, data].sort((a, b) => a.date_on.localeCompare(b.date_on)),
     );
     setTitle("");
     setDateOn("");
@@ -298,7 +387,70 @@ export default function DatesPage() {
             >
               {busy ? "Saving..." : "Add date"}
             </button>
+            {ideas !== null ? (
+              <button
+                type="button"
+                onClick={saveIdea}
+                className={`ml-3 mt-5 rounded-full bg-white/80 px-7 py-3 font-semibold text-ink ring-1 ring-ink/15 hover:bg-white ${FOCUS}`}
+              >
+                Save for later
+              </button>
+            ) : null}
           </form>
+
+          {ideas !== null && ideas.length > 0 ? (
+            <>
+              <h2 className="mb-4 mt-12 font-display text-3xl text-ink">
+                Saved ideas
+              </h2>
+              <ul className="space-y-3">
+                {ideas.map((idea) => (
+                  <li
+                    key={idea.id}
+                    className={`${CARD} flex flex-wrap items-center justify-between gap-3 p-4 ${
+                      idea.done_on ? "opacity-70" : ""
+                    }`}
+                  >
+                    <div className="min-w-0">
+                      <div className="font-semibold text-ink">{idea.title}</div>
+                      {idea.done_on ? (
+                        <div className="text-sm text-ink/70">
+                          Done on{" "}
+                          {format(parseDay(idea.done_on), "MMM d, yyyy")}
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="flex gap-1 text-sm font-semibold">
+                      {!idea.done_on ? (
+                        <button
+                          type="button"
+                          onClick={() => planIdea(idea)}
+                          className={`rounded-full px-3 py-1 text-ink hover:bg-white ${FOCUS}`}
+                        >
+                          Plan it
+                        </button>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => toggleDone(idea)}
+                        className={`rounded-full px-3 py-1 text-ink/75 hover:bg-white ${FOCUS}`}
+                      >
+                        {idea.done_on ? "Not done" : "Mark done"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteIdea(idea)}
+                        aria-label={`Delete ${idea.title}`}
+                        className={`rounded-full px-3 py-1 text-ink/75 hover:bg-white hover:text-rose-deep ${FOCUS}`}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
 
           <h2 className="mb-4 mt-12 font-display text-3xl text-ink">
             Coming up
