@@ -10,6 +10,7 @@ import SharedPageState from "@/components/SharedPageState";
 import StatusMessage from "@/components/StatusMessage";
 import { supabase } from "@/lib/supabase";
 import { getCurrentUser } from "@/lib/auth";
+import { sendMessage } from "@/lib/messages";
 import { NICKNAME_MAX, loadNicknames, saveNickname } from "@/lib/nicknames";
 import { currentStreak, longestStreak } from "@/lib/streaks";
 import {
@@ -40,6 +41,9 @@ export default function FriendPage() {
   const [draft, setDraft] = useState("");
   const [message, setMessage] = useState("");
   const [failed, setFailed] = useState(false);
+  const [nudgeBusy, setNudgeBusy] = useState(false);
+  const [nudgeNote, setNudgeNote] = useState("");
+  const [nudgeFailed, setNudgeFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -108,6 +112,35 @@ export default function FriendPage() {
       cancelled = true;
     };
   }, [id]);
+
+  async function sendNudge() {
+    if (!data) return;
+
+    setNudgeBusy(true);
+    setNudgeNote("");
+
+    const problem = await sendMessage(id, "nudge", "Thinking of you");
+
+    setNudgeBusy(false);
+
+    if (problem) {
+      setNudgeFailed(true);
+      setNudgeNote(problem);
+      return;
+    }
+
+    // Count it right away so the streak updates without a reload.
+    const today = format(new Date(), "yyyy-MM-dd");
+    const days = [...data.messageDays, today];
+
+    setData({ ...data, messageDays: days, messages: data.messages + 1 });
+    setNudgeFailed(false);
+    setNudgeNote(
+      `Sent. Your streak is now ${currentStreak(days)} day${
+        currentStreak(days) === 1 ? "" : "s"
+      }.`
+    );
+  }
 
   async function saveName(e: FormEvent) {
     e.preventDefault();
@@ -236,9 +269,27 @@ export default function FriendPage() {
               other a message or a nudge.
             </p>
 
-            <Link href="/mailbox" className={`${PRIMARY_BUTTON} mt-5 inline-block`}>
-              Send a message
-            </Link>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={sendNudge}
+                disabled={nudgeBusy}
+                className={PRIMARY_BUTTON}
+              >
+                {nudgeBusy ? "Sending..." : "Thinking of you"}
+              </button>
+              <Link
+                href="/mailbox"
+                className={`rounded-full bg-white/80 px-6 py-3 font-semibold text-ink ring-1 ring-ink/15 hover:bg-white ${FOCUS}`}
+              >
+                Write a message
+              </Link>
+            </div>
+
+            <StatusMessage
+              message={nudgeNote}
+              tone={nudgeFailed ? "error" : "success"}
+            />
           </section>
 
           <section className={`${CARD} p-6`}>

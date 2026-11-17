@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Flame } from "lucide-react";
+import { format } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import PageFrame from "@/components/PageFrame";
 import SharedPageState from "@/components/SharedPageState";
@@ -11,6 +12,7 @@ import StatusMessage from "@/components/StatusMessage";
 import { CARD, FOCUS } from "@/lib/ui";
 import { getCurrentUser } from "@/lib/auth";
 import { loadNicknames } from "@/lib/nicknames";
+import { currentStreak } from "@/lib/streaks";
 
 type Friend = {
   id: string;
@@ -20,6 +22,7 @@ type Friend = {
 export default function FriendsListPage() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [nicknames, setNicknames] = useState<Record<string, string>>({});
+  const [streaks, setStreaks] = useState<Record<string, number>>({});
   const [hasPartner, setHasPartner] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [message, setMessage] = useState("");
@@ -63,6 +66,33 @@ export default function FriendsListPage() {
         );
 
         setFriends(loadedFriends.filter(Boolean) as Friend[]);
+
+        // One query for everyone: the days you were in touch with each friend.
+        const { data: messages } = await supabase
+          .from("messages")
+          .select("sender_id, receiver_id, created_at")
+          .not("sender_id", "is", null)
+          .limit(5000);
+
+        const daysByFriend: Record<string, string[]> = {};
+
+        for (const m of messages ?? []) {
+          const other = m.sender_id === user.id ? m.receiver_id : m.sender_id;
+
+          if (!friendIds.includes(other)) continue;
+
+          (daysByFriend[other] ??= []).push(
+            format(new Date(m.created_at), "yyyy-MM-dd")
+          );
+        }
+
+        const found: Record<string, number> = {};
+
+        for (const [id, days] of Object.entries(daysByFriend)) {
+          found[id] = currentStreak(days);
+        }
+
+        setStreaks(found);
       }
 
       setNicknames(await loadNicknames());
@@ -135,6 +165,16 @@ export default function FriendsListPage() {
                     </span>
                   ) : null}
                 </span>
+                {streaks[friend.id] > 0 ? (
+                  <span
+                    className="ml-auto flex shrink-0 items-center gap-1 rounded-full bg-blush/70 px-2.5 py-1 text-sm font-semibold text-rose-deep"
+                    aria-label={`${streaks[friend.id]} day streak`}
+                    title={`${streaks[friend.id]} day streak`}
+                  >
+                    <Flame className="h-4 w-4" aria-hidden="true" />
+                    {streaks[friend.id]}
+                  </span>
+                ) : null}
                 <ChevronRight
                   className="h-5 w-5 shrink-0 text-ink/50"
                   aria-hidden="true"
