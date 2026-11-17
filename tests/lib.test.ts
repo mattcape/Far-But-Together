@@ -118,3 +118,27 @@ describe("friendship rewards", () => {
     expect(friendsFor(new Date(2026, 2, 1), now)).toBe("3 months, 9 days");
   });
 });
+
+import { takeNewRewards } from "@/lib/friendship";
+
+describe("takeNewRewards", () => {
+  function fakeStorage() {
+    const store = new Map<string, string>();
+
+    (globalThis as unknown as { localStorage: unknown }).localStorage = {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => void store.set(k, v),
+    };
+  }
+
+  it("stays quiet the first time, then reports only new rewards", () => {
+    fakeStorage();
+
+    expect(takeNewRewards("u", "f", { days: 40, bestStreak: 0, messages: 0 })).toEqual([]);
+
+    const fresh = takeNewRewards("u", "f", { days: 95, bestStreak: 0, messages: 0 });
+
+    expect(fresh.map((r) => r.id)).toEqual(["d90"]);
+    expect(takeNewRewards("u", "f", { days: 95, bestStreak: 0, messages: 0 })).toEqual([]);
+  });
+});

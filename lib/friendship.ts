@@ -86,3 +86,33 @@ export function friendsFor(start: Date, now: Date = new Date()): string {
 
   return parts.join(", ") || `${daysSince(start, now)} days`;
 }
+
+function seenKey(userId: string, friendId: string): string {
+  return `fbt-rewards-seen:${userId}:${friendId}`;
+}
+
+// Works out which rewards were earned since you last looked, and remembers
+// what you've now seen. The first time you open a friend, nothing counts as
+// new, so you aren't greeted with a pile of old rewards.
+export function takeNewRewards(
+  userId: string,
+  friendId: string,
+  stats: Stats
+): RewardStatus[] {
+  const earned = rewardStatuses(stats).filter((r) => r.earned);
+  const key = seenKey(userId, friendId);
+
+  try {
+    const raw = localStorage.getItem(key);
+    const seen: string[] | null = raw ? JSON.parse(raw) : null;
+
+    localStorage.setItem(key, JSON.stringify(earned.map((r) => r.id)));
+
+    if (seen === null) return [];
+
+    return earned.filter((r) => !seen.includes(r.id));
+  } catch {
+    // Storage blocked: skip celebrations rather than repeat them.
+    return [];
+  }
+}

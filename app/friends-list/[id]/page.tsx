@@ -4,7 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { format } from "date-fns";
-import { Award, Flame, MessagesSquare } from "lucide-react";
+import { Award, Flame, MessagesSquare, PartyPopper } from "lucide-react";
 import PageFrame from "@/components/PageFrame";
 import SharedPageState from "@/components/SharedPageState";
 import StatusMessage from "@/components/StatusMessage";
@@ -17,6 +17,7 @@ import {
   daysSince,
   friendsFor,
   nextReward,
+  takeNewRewards,
   rewardStatuses,
   unitFor,
   type Stats,
@@ -31,6 +32,14 @@ type Loaded = {
   messages: number;
 };
 
+function statsOf(data: Loaded): Stats {
+  return {
+    days: data.since ? daysSince(data.since) : 0,
+    bestStreak: longestStreak(data.messageDays),
+    messages: data.messages,
+  };
+}
+
 export default function FriendPage() {
   const { id } = useParams<{ id: string }>();
   const [state, setState] = useState<"loading" | "missing" | "ready">(
@@ -41,6 +50,7 @@ export default function FriendPage() {
   const [draft, setDraft] = useState("");
   const [message, setMessage] = useState("");
   const [failed, setFailed] = useState(false);
+  const [celebrate, setCelebrate] = useState<string[]>([]);
   const [nudgeBusy, setNudgeBusy] = useState(false);
   const [nudgeNote, setNudgeNote] = useState("");
   const [nudgeFailed, setNudgeFailed] = useState(false);
@@ -94,13 +104,18 @@ export default function FriendPage() {
 
       const messages = rows ?? [];
 
-      setData({
+      const loaded: Loaded = {
         userId: user.id,
         realName: profile.display_name || "Your friend",
         since: friendship.created_at ? new Date(friendship.created_at) : null,
         messageDays: messages.map((m) => format(new Date(m.created_at), "yyyy-MM-dd")),
         messages: messages.length,
-      });
+      };
+
+      setData(loaded);
+      setCelebrate(
+        takeNewRewards(user.id, id, statsOf(loaded)).map((r) => r.title)
+      );
       setNickname(nicknames[id] ?? "");
       setDraft(nicknames[id] ?? "");
       setState("ready");
@@ -133,7 +148,13 @@ export default function FriendPage() {
     const today = format(new Date(), "yyyy-MM-dd");
     const days = [...data.messageDays, today];
 
-    setData({ ...data, messageDays: days, messages: data.messages + 1 });
+    const updated = { ...data, messageDays: days, messages: data.messages + 1 };
+
+    setData(updated);
+
+    const fresh = takeNewRewards(data.userId, id, statsOf(updated));
+
+    if (fresh.length > 0) setCelebrate(fresh.map((r) => r.title));
     setNudgeFailed(false);
     setNudgeNote(
       `Sent. Your streak is now ${currentStreak(days)} day${
@@ -185,13 +206,7 @@ export default function FriendPage() {
     window.location.href = "/friends-list";
   }
 
-  const stats: Stats | null = data
-    ? {
-        days: data.since ? daysSince(data.since) : 0,
-        bestStreak: longestStreak(data.messageDays),
-        messages: data.messages,
-      }
-    : null;
+  const stats: Stats | null = data ? statsOf(data) : null;
 
   const title = data ? nickname || data.realName : "Friend";
 
@@ -219,6 +234,36 @@ export default function FriendPage() {
         </div>
       ) : (
         <div className="space-y-6">
+          {celebrate.length > 0 ? (
+            <div
+              role="status"
+              className={`${CARD} flex items-start gap-3 bg-blush/70 p-5 ring-1 ring-rose-deep/30`}
+            >
+              <PartyPopper
+                className="mt-0.5 h-6 w-6 shrink-0 text-rose-deep"
+                aria-hidden="true"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="font-display text-xl text-ink">
+                  {celebrate.length === 1
+                    ? "New reward earned"
+                    : "New rewards earned"}
+                </div>
+                <p className="mt-1 text-ink/85">
+                  You and {nickname || data.realName} earned{" "}
+                  {celebrate.join(", ")}.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCelebrate([])}
+                className={`shrink-0 rounded-full px-3 py-2 text-sm font-semibold text-ink/75 hover:bg-white ${FOCUS}`}
+              >
+                Dismiss
+              </button>
+            </div>
+          ) : null}
+
           <section className={`${CARD} p-6`}>
             <h2 className="font-display text-2xl text-ink">Friends for</h2>
             {data.since ? (
