@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { isMissingSetup } from "@/lib/relationship";
 import { CARD, FOCUS, INPUT, PRIMARY_BUTTON, SECONDARY_BUTTON } from "@/lib/ui";
 import { getCurrentUser } from "@/lib/auth";
+import { NICKNAME_MAX, saveNickname } from "@/lib/nicknames";
 
 type Found = {
   id: string;
@@ -27,6 +28,7 @@ export default function FriendsPage() {
 
   const [code, setCode] = useState("");
   const [found, setFound] = useState<Found | null>(null);
+  const [nickname, setNickname] = useState("");
   const [message, setMessage] = useState("");
   const [failed, setFailed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -126,6 +128,7 @@ export default function FriendsPage() {
           ? "received"
           : "new";
 
+    setNickname("");
     setFound({ ...person, state });
   }
 
@@ -145,8 +148,12 @@ export default function FriendsPage() {
       return;
     }
 
+    // A nickname is optional and only you will ever see it.
+    if (nickname.trim()) await saveNickname(found.id, nickname);
+
     setFailed(false);
     setFound({ ...found, state: "sent" });
+    setNickname("");
     setMessage(`Friend request sent to ${found.display_name}.`);
   }
 
@@ -223,30 +230,55 @@ export default function FriendsPage() {
           </form>
 
           {found ? (
-            <div
-              className={`${CARD} mt-4 flex items-center justify-between gap-4 p-5`}
-            >
-              <span className="font-display text-2xl text-ink">
-                {found.display_name}
-              </span>
+            <div className={`${CARD} mt-4 p-5`}>
+              <div className="flex items-center justify-between gap-4">
+                <span className="font-display text-2xl text-ink">
+                  {found.display_name}
+                </span>
 
-              {found.state === "friends" ? (
-                <span className="font-semibold text-ink/70">Already friends</span>
-              ) : found.state === "sent" ? (
-                <span className="font-semibold text-ink/70">Request sent</span>
-              ) : found.state === "received" ? (
-                <Link href="/friend-requests" className={link}>
-                  They already asked you. Accept
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  onClick={addFriend}
-                  className={`rounded-full bg-rose-deep px-5 py-2 font-semibold text-white hover:brightness-110 ${FOCUS}`}
-                >
-                  Add friend
-                </button>
-              )}
+                {found.state === "friends" ? (
+                  <span className="font-semibold text-ink/70">
+                    Already friends
+                  </span>
+                ) : found.state === "sent" ? (
+                  <span className="font-semibold text-ink/70">Request sent</span>
+                ) : found.state === "received" ? (
+                  <Link href="/friend-requests" className={link}>
+                    They already asked you. Accept
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={addFriend}
+                    className={`rounded-full bg-rose-deep px-5 py-2 font-semibold text-white hover:brightness-110 ${FOCUS}`}
+                  >
+                    Add friend
+                  </button>
+                )}
+              </div>
+
+              {found.state === "new" ? (
+                <div className="mt-4">
+                  <label
+                    htmlFor="friend-nickname"
+                    className="mb-1 block font-semibold text-ink"
+                  >
+                    Nickname (optional)
+                  </label>
+                  <input
+                    id="friend-nickname"
+                    type="text"
+                    maxLength={NICKNAME_MAX}
+                    autoComplete="off"
+                    className={INPUT}
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
+                  />
+                  <p className="mt-1 text-sm text-ink/70">
+                    Only you see this, and you can change it any time.
+                  </p>
+                </div>
+              ) : null}
             </div>
           ) : null}
         </>

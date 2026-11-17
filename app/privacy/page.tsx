@@ -14,8 +14,8 @@ export default function PrivacyPage() {
         <List
           items={[
             "Your account: your email address and a password. Your password is handled by our sign-in provider and stored in scrambled form. We never see it.",
-            "Your profile: your display name, your time zone, and a friend code.",
-            "What you add: daily check-ins (mood, how you feel, what you're grateful for), visit dates, planned dates, memories and their photos, bucket list items, your anniversary, messages and nudges, open when letters, question of the day answers, and community posts.",
+            "Your profile: your display name, your time zone, a friend code, and a count of how many times you have changed your name (it can be changed once).",
+            "What you add: daily check-ins (mood, how you feel, what you're grateful for), visit dates, planned dates, memories and their photos, bucket list items, your anniversary, messages and nudges, open when letters, question of the day answers, community posts, and nicknames you give your friends (only you can see them).",
             "Your connections: friend requests, friendships, relationship requests, and your relationship, plus any community posts you report.",
             "Technical records: like most websites, our hosting providers keep standard server logs, such as your IP address and browser type, to run and protect the service.",
           ]}

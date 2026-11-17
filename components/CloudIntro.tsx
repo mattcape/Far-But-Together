@@ -96,7 +96,11 @@ export default function CloudIntro() {
 
       <p
         aria-hidden="true"
-        className="intro-wordmark absolute inset-0 z-10 flex items-center justify-center px-6 text-center font-display text-4xl text-ink sm:text-6xl"
+        className="intro-wordmark absolute inset-0 z-10 flex items-center justify-center px-6 text-center font-display text-5xl text-[#161d3f] sm:text-7xl"
+        style={{
+          textShadow:
+            "0 0 18px rgba(255,255,255,0.95), 0 0 6px rgba(255,255,255,0.9), 0 2px 2px rgba(255,255,255,0.8)",
+        }}
       >
         Far But Together
       </p>
@@ -104,7 +108,7 @@ export default function CloudIntro() {
       <button
         type="button"
         onClick={finish}
-        className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 rounded-full bg-white/70 px-4 py-2 text-sm font-medium text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+        className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 rounded-full bg-white/85 px-4 py-2 text-sm font-medium text-[#161d3f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#161d3f]"
       >
         Skip intro
       </button>

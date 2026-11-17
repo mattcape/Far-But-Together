@@ -16,6 +16,7 @@ import {
 } from "@/lib/messages";
 import { CARD, FOCUS, INPUT, PRIMARY_BUTTON } from "@/lib/ui";
 import { getCurrentUser } from "@/lib/auth";
+import { loadNicknames, nameFor } from "@/lib/nicknames";
 
 type Msg = Message & { receiver_id: string };
 
@@ -93,12 +94,14 @@ export default function MailboxPage() {
     const lookup: Record<string, string> = {};
 
     if (ids.length > 0) {
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, display_name")
-        .in("id", ids);
+      const [{ data: profiles }, nicknames] = await Promise.all([
+        supabase.from("profiles").select("id, display_name").in("id", ids),
+        loadNicknames(),
+      ]);
 
-      for (const p of profiles ?? []) lookup[p.id] = p.display_name;
+      for (const p of profiles ?? []) {
+        lookup[p.id] = nameFor(p.id, p.display_name, nicknames);
+      }
     }
 
     return { rows, lookup };

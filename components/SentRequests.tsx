@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { CARD, FOCUS } from "@/lib/ui";
 import { getCurrentUser } from "@/lib/auth";
+import { loadNicknames, nameFor } from "@/lib/nicknames";
 
 type Sent = {
   id: string;
@@ -39,10 +40,13 @@ export default function SentRequests() {
 
       if (found.length === 0) return;
 
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, display_name")
-        .in("id", [...new Set(found.map((f) => f.to))]);
+      const [{ data: profiles }, nicknames] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id, display_name")
+          .in("id", [...new Set(found.map((f) => f.to))]),
+        loadNicknames(),
+      ]);
 
       if (cancelled) return;
 
@@ -50,7 +54,11 @@ export default function SentRequests() {
         found.map((f) => ({
           id: f.id,
           table: f.table,
-          name: profiles?.find((p) => p.id === f.to)?.display_name || "Someone",
+          name: nameFor(
+            f.to,
+            profiles?.find((p) => p.id === f.to)?.display_name || "Someone",
+            nicknames
+          ),
         }))
       );
     }

@@ -1,6 +1,7 @@
 import { differenceInCalendarDays, format } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { getCurrentUser } from "@/lib/auth";
+import { loadNicknames, nameFor } from "@/lib/nicknames";
 
 export type HomeData = {
   signedIn: boolean;
@@ -87,7 +88,7 @@ export async function loadHomeData(): Promise<HomeData> {
     const today = format(new Date(), "yyyy-MM-dd");
 
     // The partner's name, next visit and next date are independent too.
-    const [{ data: partner }, { data: visits }, { data: dates }] =
+    const [{ data: partner }, { data: visits }, { data: dates }, nicknames] =
       await Promise.all([
         supabase
           .from("profiles")
@@ -109,9 +110,14 @@ export async function loadHomeData(): Promise<HomeData> {
           .gte("date_on", today)
           .order("date_on", { ascending: true })
           .limit(1),
+        loadNicknames(),
       ]);
 
-    result.partnerName = partner?.display_name || "Your partner";
+    result.partnerName = nameFor(
+      partnerId,
+      partner?.display_name || "Your partner",
+      nicknames
+    );
 
     if (visits && visits.length > 0) {
       result.daysToNextVisit = Math.max(
@@ -207,18 +213,25 @@ export async function getCouple(): Promise<Couple> {
 
   const partnerId = rel.user_one === user.id ? rel.user_two : rel.user_one;
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name")
-    .eq("id", partnerId)
-    .maybeSingle();
+  const [{ data: profile }, nicknames] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", partnerId)
+      .maybeSingle(),
+    loadNicknames(),
+  ]);
 
   return {
     status: "ok",
     userId: user.id,
     relationshipId: rel.id,
     partnerId,
-    partnerName: profile?.display_name || "Your partner",
+    partnerName: nameFor(
+      partnerId,
+      profile?.display_name || "Your partner",
+      nicknames
+    ),
   };
 }
 

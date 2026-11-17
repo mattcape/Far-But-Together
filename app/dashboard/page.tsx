@@ -19,6 +19,7 @@ import {
 } from "@/lib/messages";
 import { CARD, FOCUS, PRIMARY_BUTTON, SECONDARY_BUTTON } from "@/lib/ui";
 import { getCurrentUser } from "@/lib/auth";
+import { loadNicknames, nameFor } from "@/lib/nicknames";
 
 // A plain "YYYY-MM-DD" is read as UTC by `new Date(...)`, which lands on the
 // evening before in US timezones. Build it as local midnight instead.
@@ -219,16 +220,28 @@ export default function Dashboard() {
 
       setPartnerZone(zones?.find((z) => z.id === otherUserId)?.timezone ?? null);
 
-      const { data: otherProfile } = await supabase
-        .from("profiles")
-        .select("display_name")
-        .eq("id", otherUserId)
-        .single();
+      const [{ data: otherRaw }, nicknames] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("id", otherUserId)
+          .single(),
+        loadNicknames(),
+      ]);
+
+      // Show your nickname for them, if you gave one.
+      const otherProfile = otherRaw?.display_name
+        ? {
+            display_name: nameFor(
+              otherUserId,
+              otherRaw.display_name,
+              nicknames
+            ),
+          }
+        : otherRaw;
 
       if (otherProfile?.display_name) {
-        setSignificantOther(
-          otherProfile.display_name
-        );
+        setSignificantOther(otherProfile.display_name);
       }
 
       // Only visits today or later, soonest first, so a past visit

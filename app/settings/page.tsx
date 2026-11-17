@@ -38,6 +38,9 @@ export default function SettingsPage() {
 
   const [displayName, setDisplayName] = useState("");
   const [nameMessage, setNameMessage] = useState<Message>(null);
+  const [savedName, setSavedName] = useState("");
+  // null until we know; 1 or more means the one change has been used.
+  const [nameChanges, setNameChanges] = useState<number | null>(null);
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -57,13 +60,30 @@ export default function SettingsPage() {
       setUserId(user.id);
       setEmail(user.email ?? "");
 
-      const { data: profile } = await supabase
+      const first = await supabase
         .from("profiles")
-        .select("display_name")
+        .select("display_name, name_changes")
         .eq("id", user.id)
         .maybeSingle();
 
+      let profile = first.data;
+
+      // Before names-and-nicknames.sql has been run there is no counter yet.
+      if (first.error) {
+        const fallback = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        profile = fallback.data
+          ? { ...fallback.data, name_changes: null as unknown as number }
+          : null;
+      }
+
       setDisplayName(profile?.display_name ?? "");
+      setSavedName(profile?.display_name ?? "");
+      setNameChanges(profile?.name_changes ?? null);
     }
 
     load();
@@ -85,16 +105,44 @@ export default function SettingsPage() {
 
     if (!userId) return;
 
+    if (name === savedName) {
+      setNameMessage({ kind: "ok", text: "That's already your name." });
+      return;
+    }
+
+    // Changing an existing name uses up the one change.
+    const isChange = savedName !== "";
+
+    if (
+      isChange &&
+      !window.confirm(
+        `You can only change your name once. Change it to "${name}"?`
+      )
+    ) {
+      return;
+    }
+
     setBusy("name");
     const error = await saveDisplayName(userId, name);
     setBusy(null);
 
     if (error) {
-      setNameMessage({ kind: "error", text: error });
+      const used = /only change your name once/i.test(error);
+
+      if (used) setNameChanges(1);
+
+      setNameMessage({
+        kind: "error",
+        text: used ? "You've already used your one name change." : error,
+      });
       return;
     }
 
     setDisplayName(name);
+    setSavedName(name);
+
+    if (isChange) setNameChanges((n) => (n ?? 0) + 1);
+
     setNameMessage({ kind: "ok", text: "Name saved." });
   }
 
@@ -148,33 +196,65 @@ export default function SettingsPage() {
         <section className={`${CARD} p-6`}>
           <h2 className="font-display text-2xl text-ink">Your name</h2>
 
-          <form onSubmit={saveName} className="mt-4">
-            <label
-              htmlFor="display-name"
-              className="mb-1 block font-semibold text-ink"
-            >
-              Display name
-            </label>
-            <input
-              id="display-name"
-              type="text"
-              autoComplete="nickname"
-              maxLength={40}
-              className={INPUT}
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-            />
+          {nameChanges !== null && nameChanges >= 1 && savedName ? (
+            <div className="mt-4">
+              <div className="font-semibold text-ink">Display name</div>
+              <p className="mt-1 text-lg text-ink">{savedName}</p>
+              <p className="mt-3 text-ink/75">
+                You&apos;ve used your one name change, so your name is now
+                locked.
+                {process.env.NEXT_PUBLIC_CONTACT_EMAIL ? (
+                  <>
+                    {" "}
+                    If something is wrong,{" "}
+                    <a
+                      href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}`}
+                      className="font-semibold text-ink underline decoration-rose-deep decoration-2 underline-offset-4"
+                    >
+                      contact us
+                    </a>
+                    .
+                  </>
+                ) : null}{" "}
+                You can still give your friends nicknames any time from My
+                friends.
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={saveName} className="mt-4">
+              <label
+                htmlFor="display-name"
+                className="mb-1 block font-semibold text-ink"
+              >
+                Display name
+              </label>
+              <input
+                id="display-name"
+                type="text"
+                autoComplete="nickname"
+                maxLength={40}
+                className={INPUT}
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+              />
+              {nameChanges !== null && savedName ? (
+                <p className="mt-2 text-sm text-ink/75">
+                  You can change your name once. After that it&apos;s locked,
+                  so choose carefully.
+                </p>
+              ) : null}
 
-            <Notice message={nameMessage} />
+              <Notice message={nameMessage} />
 
-            <button
-              type="submit"
-              disabled={busy === "name"}
-              className={`${PRIMARY_BUTTON} mt-4`}
-            >
-              {busy === "name" ? "Saving..." : "Save name"}
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={busy === "name"}
+                className={`${PRIMARY_BUTTON} mt-4`}
+              >
+                {busy === "name" ? "Saving..." : "Save name"}
+              </button>
+            </form>
+          )}
         </section>
 
         <section className={`${CARD} p-6`}>

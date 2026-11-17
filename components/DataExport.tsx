@@ -58,6 +58,7 @@ export default function DataExport() {
         dates: await rows("dates", "relationship_id", ids),
         memories: await rows("memories", "relationship_id", ids),
         countdowns: await rows("countdowns", "relationship_id", ids),
+        friend_nicknames: await rows("friend_nicknames", "owner_id", [user.id]),
         saved_date_ideas: await rows("couple_date_ideas", "relationship_id", ids),
         photos_of_the_day: await rows("daily_photos", "relationship_id", ids),
         letters: letters.error ? [] : (letters.data ?? []),
