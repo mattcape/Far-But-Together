@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import { Figtree, Fraunces, Young_Serif } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import AuthGuard from "@/components/AuthGuard";
 import Footer from "@/components/Footer";
 import NavBar from "@/components/NavBar";
@@ -69,15 +69,7 @@ export default function RootLayout({
         <NavBar />
         <AuthGuard>{children}</AuthGuard>
         <Footer />
-        {/* Anonymous page-speed measurements; only active once Speed Insights
-            is switched on for the project in Vercel. */}
-        <Script id="speed-insights-init" strategy="afterInteractive">
-          {`window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };`}
-        </Script>
-        <Script
-          src="/_vercel/speed-insights/script.js"
-          strategy="afterInteractive"
-        />
+        <SpeedInsights />
       </body>
     </html>
   );
