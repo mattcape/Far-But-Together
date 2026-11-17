@@ -93,6 +93,7 @@ export default function DatesPage() {
   );
   const [items, setItems] = useState<DateItem[]>([]);
   const [ideas, setIdeas] = useState<SavedIdea[] | null>(null);
+  const [pick, setPick] = useState<SavedIdea | null>(null);
   const [partner, setPartner] = useState<{ id: string; name: string } | null>(
     null,
   );
@@ -197,6 +198,14 @@ export default function DatesPage() {
     setIdeas((current) => [data, ...(current ?? [])]);
     setTitle("");
     setNotes("");
+  }
+
+  // A random idea from the saved list that you haven't done yet.
+  function pickOne() {
+    const open = (ideas ?? []).filter((i) => !i.done_on);
+    const pool = open.length > 1 ? open.filter((i) => i.id !== pick?.id) : open;
+
+    setPick(pool[Math.floor(Math.random() * pool.length)] ?? null);
   }
 
   function planIdea(idea: SavedIdea) {
@@ -398,9 +407,63 @@ export default function DatesPage() {
 
           {ideas !== null && ideas.length > 0 ? (
             <>
-              <h2 className="mb-4 mt-12 font-display text-3xl text-ink">
-                Saved ideas
-              </h2>
+              <div className="mb-4 mt-12 flex flex-wrap items-center justify-between gap-3">
+                <h2 className="font-display text-3xl text-ink">Saved ideas</h2>
+                {ideas.some((i) => !i.done_on) ? (
+                  <button
+                    type="button"
+                    onClick={pickOne}
+                    className={`rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink ring-1 ring-ink/15 hover:bg-blush ${FOCUS}`}
+                  >
+                    Pick one for us
+                  </button>
+                ) : null}
+              </div>
+
+              {pick ? (
+                <div
+                  role="status"
+                  className={`${CARD} mb-4 bg-blush/70 p-5 ring-1 ring-rose-deep/30`}
+                >
+                  <div className="text-sm font-semibold text-ink/75">
+                    How about this one?
+                  </div>
+                  <div className="mt-1 font-display text-2xl text-ink">
+                    {pick.title}
+                  </div>
+                  {pick.notes ? (
+                    <p className="mt-1 text-ink/80">{pick.notes}</p>
+                  ) : null}
+                  <div className="mt-3 flex flex-wrap gap-2 text-sm font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        planIdea(pick);
+                        setPick(null);
+                      }}
+                      className={`rounded-full bg-rose-deep px-4 py-2 text-white hover:brightness-110 ${FOCUS}`}
+                    >
+                      Plan it
+                    </button>
+                    {ideas.filter((i) => !i.done_on).length > 1 ? (
+                      <button
+                        type="button"
+                        onClick={pickOne}
+                        className={`rounded-full px-4 py-2 text-ink hover:bg-white ${FOCUS}`}
+                      >
+                        Pick another
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => setPick(null)}
+                      className={`rounded-full px-4 py-2 text-ink/75 hover:bg-white ${FOCUS}`}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              ) : null}
               <ul className="space-y-3">
                 {ideas.map((idea) => (
                   <li

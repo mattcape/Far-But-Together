@@ -6,6 +6,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import PageFrame from "@/components/PageFrame";
 import Nudges from "@/components/Nudges";
+import SundayRecap from "@/components/SundayRecap";
 import ScrollMemory from "@/components/ScrollMemory";
 import ToolLinks from "@/components/ToolLinks";
 import MoodChart, { type MoodSeries } from "@/components/MoodChart";
@@ -410,6 +411,8 @@ export default function Dashboard() {
           <span className="font-semibold text-rose-deep">Open mailbox</span>
         </Link>
       ) : null}
+
+      <SundayRecap />
 
       <Nudges
         relationshipId={relationshipId}
