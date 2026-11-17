@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { CARD, FOCUS, SECONDARY_BUTTON } from "@/lib/ui";
+import { getCurrentUser } from "@/lib/auth";
 
 type Info = { id: string | number; partnerName: string };
 
@@ -18,9 +19,7 @@ export default function RelationshipSettings() {
     let cancelled = false;
 
     async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
 
       if (!user || cancelled) return;
 

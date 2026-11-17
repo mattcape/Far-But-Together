@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { countUnread, ensureTeamMessage } from "@/lib/messages";
 import { notificationsOn } from "@/components/AppearanceSettings";
+import { getCurrentUser } from "@/lib/auth";
 
 // Pages that have their own full-screen look and don't need the bar.
 const HIDDEN_ON = [
@@ -49,9 +50,7 @@ export default function NavBar() {
     let cancelled = false;
 
     async function refresh() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
 
       if (!user || cancelled) return;
 

@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import PageFrame from "@/components/PageFrame";
+import SharedPageState from "@/components/SharedPageState";
 import StatusMessage from "@/components/StatusMessage";
 import { CARD, FOCUS } from "@/lib/ui";
+import { getCurrentUser } from "@/lib/auth";
 
 type Request = {
   id: string;
@@ -21,9 +23,7 @@ export default function FriendRequestsPage() {
 
   useEffect(() => {
     async function loadRequests() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
 
       if (!user) return;
 
@@ -62,9 +62,7 @@ export default function FriendRequestsPage() {
   async function acceptRequest(request: Request) {
     setMessage("");
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
 
     if (!user) return;
 
@@ -94,9 +92,7 @@ export default function FriendRequestsPage() {
       <StatusMessage message={message} tone={failed ? "error" : "success"} />
 
       {!loaded ? (
-        <p role="status" className="mt-4 text-ink/75">
-          Loading...
-        </p>
+        <SharedPageState kind="loading" />
       ) : requests.length === 0 ? (
         <div className={`${CARD} mt-4 p-6 text-ink/80`}>
           No pending requests.

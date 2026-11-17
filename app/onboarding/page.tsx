@@ -5,6 +5,7 @@ import AuthCard from "@/components/AuthCard";
 import { supabase } from "@/lib/supabase";
 import { saveDisplayName } from "@/lib/profile";
 import { INPUT, PRIMARY_BUTTON } from "@/lib/ui";
+import { getCurrentUser } from "@/lib/auth";
 
 export default function OnboardingPage() {
   const [displayName, setDisplayName] = useState("");
@@ -14,9 +15,7 @@ export default function OnboardingPage() {
   // Send logged-out visitors to log in, and fill in any name already saved.
   useEffect(() => {
     async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
 
       if (!user) {
         window.location.href = "/login";
@@ -48,9 +47,7 @@ export default function OnboardingPage() {
 
     setBusy(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
 
     if (!user) {
       window.location.href = "/login";

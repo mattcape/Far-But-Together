@@ -7,6 +7,7 @@ import SharedPageState from "@/components/SharedPageState";
 import { supabase } from "@/lib/supabase";
 import { isMissingSetup, isMissingTable } from "@/lib/relationship";
 import { CARD, FOCUS, INPUT, PRIMARY_BUTTON } from "@/lib/ui";
+import { getCurrentUser } from "@/lib/auth";
 
 type Post = {
   id: string;
@@ -32,9 +33,7 @@ export default function CommunityPage() {
     let cancelled = false;
 
     async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
 
       if (cancelled || !user) return;
 

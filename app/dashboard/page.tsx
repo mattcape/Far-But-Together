@@ -18,6 +18,7 @@ import {
   sendMessage,
 } from "@/lib/messages";
 import { CARD, FOCUS, PRIMARY_BUTTON, SECONDARY_BUTTON } from "@/lib/ui";
+import { getCurrentUser } from "@/lib/auth";
 
 // A plain "YYYY-MM-DD" is read as UTC by `new Date(...)`, which lands on the
 // evening before in US timezones. Build it as local midnight instead.
@@ -139,9 +140,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function loadData() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
 
       // Set after mount so the server and browser can't disagree on the hour.
       setGreeting(greetingFor(new Date().getHours()));

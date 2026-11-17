@@ -17,7 +17,7 @@ import TogetherClock from "@/components/TogetherClock";
 import { todaysMilestones } from "@/lib/milestones";
 import { loadHomeData, type HomeData } from "@/lib/relationship";
 import { countUnread, ensureTeamMessage } from "@/lib/messages";
-import { supabase } from "@/lib/supabase";
+import { getCurrentUser } from "@/lib/auth";
 
 const FOCUS =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
@@ -186,9 +186,7 @@ export default function Home() {
       if (!result.signedIn) return;
 
       // Each visit brings a fresh team message; show how many are unread.
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
 
       if (!user) return;
 

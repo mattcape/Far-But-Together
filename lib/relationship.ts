@@ -1,5 +1,6 @@
 import { differenceInCalendarDays, format } from "date-fns";
 import { supabase } from "@/lib/supabase";
+import { getCurrentUser } from "@/lib/auth";
 
 export type HomeData = {
   signedIn: boolean;
@@ -56,19 +57,21 @@ export async function loadHomeData(): Promise<HomeData> {
       anniversary: null,
     };
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("display_name")
-      .eq("id", user.id)
-      .maybeSingle();
+    // Your own name and your relationship don't depend on each other.
+    const [{ data: profile }, { data: relationships }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("relationships")
+        .select("id, user_one, user_two, anniversary")
+        .or(`user_one.eq.${user.id},user_two.eq.${user.id}`)
+        .limit(1),
+    ]);
 
     result.name = profile?.display_name || null;
-
-    const { data: relationships } = await supabase
-      .from("relationships")
-      .select("id, user_one, user_two, anniversary")
-      .or(`user_one.eq.${user.id},user_two.eq.${user.id}`)
-      .limit(1);
 
     const relationship = relationships?.[0];
 
@@ -81,40 +84,41 @@ export async function loadHomeData(): Promise<HomeData> {
         ? relationship.user_two
         : relationship.user_one;
 
-    const { data: partner } = await supabase
-      .from("profiles")
-      .select("display_name")
-      .eq("id", partnerId)
-      .maybeSingle();
+    const today = format(new Date(), "yyyy-MM-dd");
+
+    // The partner's name, next visit and next date are independent too.
+    const [{ data: partner }, { data: visits }, { data: dates }] =
+      await Promise.all([
+        supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("id", partnerId)
+          .maybeSingle(),
+        supabase
+          .from("visits")
+          .select("visit_date")
+          .eq("relationship_id", relationship.id)
+          .gte("visit_date", today)
+          .order("visit_date", { ascending: true })
+          .limit(1),
+        // Ignored if the dates table isn't set up yet.
+        supabase
+          .from("dates")
+          .select("title, date_on")
+          .eq("relationship_id", relationship.id)
+          .gte("date_on", today)
+          .order("date_on", { ascending: true })
+          .limit(1),
+      ]);
 
     result.partnerName = partner?.display_name || "Your partner";
-
-    const { data: visits } = await supabase
-      .from("visits")
-      .select("visit_date")
-      .eq("relationship_id", relationship.id)
-      .gte("visit_date", format(new Date(), "yyyy-MM-dd"))
-      .order("visit_date", { ascending: true })
-      .limit(1);
 
     if (visits && visits.length > 0) {
       result.daysToNextVisit = Math.max(
         0,
-        differenceInCalendarDays(
-          parseDay(visits[0].visit_date),
-          new Date()
-        )
+        differenceInCalendarDays(parseDay(visits[0].visit_date), new Date())
       );
     }
-
-    // The next planned date. Ignored if the table isn't set up yet.
-    const { data: dates } = await supabase
-      .from("dates")
-      .select("title, date_on")
-      .eq("relationship_id", relationship.id)
-      .gte("date_on", format(new Date(), "yyyy-MM-dd"))
-      .order("date_on", { ascending: true })
-      .limit(1);
 
     if (dates && dates.length > 0) {
       result.nextDate = {
@@ -140,9 +144,7 @@ export type MyRelationship =
 // Finds the signed-in user's relationship, which shared pages (dates,
 // memories) are scoped to.
 export async function getMyRelationship(): Promise<MyRelationship> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) return { status: "signed-out" };
 
@@ -189,9 +191,7 @@ export type Couple =
 
 // Like getMyRelationship, plus who your partner is.
 export async function getCouple(): Promise<Couple> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) return { status: "signed-out" };
 

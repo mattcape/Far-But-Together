@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import PageFrame from "@/components/PageFrame";
+import SharedPageState from "@/components/SharedPageState";
 import SentRequests from "@/components/SentRequests";
 import StatusMessage from "@/components/StatusMessage";
 import { CARD, FOCUS } from "@/lib/ui";
+import { getCurrentUser } from "@/lib/auth";
 
 type Friend = {
   id: string;
@@ -21,9 +23,7 @@ export default function FriendsListPage() {
 
   useEffect(() => {
     async function loadFriends() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
 
       if (!user) return;
 
@@ -70,9 +70,7 @@ export default function FriendsListPage() {
   async function sendRequest(friend: Friend) {
     setMessage("");
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
 
     if (!user) return;
 
@@ -106,9 +104,7 @@ export default function FriendsListPage() {
 
     setMessage("");
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
 
     if (!user) return;
 
@@ -138,9 +134,7 @@ export default function FriendsListPage() {
       <StatusMessage message={message} tone={failed ? "error" : "success"} />
 
       {!loaded ? (
-        <p role="status" className="mt-4 text-ink/75">
-          Loading...
-        </p>
+        <SharedPageState kind="loading" />
       ) : friends.length === 0 ? (
         <div className={`${CARD} mt-4 p-6 text-ink/80`}>
           No friends yet. Add someone from Find friends first.

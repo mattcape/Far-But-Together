@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { myTimeZone } from "@/lib/tz";
 import { CARD, SECONDARY_BUTTON } from "@/lib/ui";
+import { getCurrentUser } from "@/lib/auth";
 
 // Downloads a copy of your data as a JSON file. Tables that don't exist yet
 // are skipped, so this works whichever features you have set up.
@@ -17,9 +18,7 @@ export default function DataExport() {
     setMessage("");
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
 
       if (!user) return;
 

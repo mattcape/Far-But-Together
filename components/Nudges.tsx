@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { parseDay } from "@/lib/relationship";
 import { myTimeZone } from "@/lib/tz";
 import { CARD, FOCUS } from "@/lib/ui";
+import { getCurrentUser } from "@/lib/auth";
 
 type Nudge = { key: string; text: string; href: string; action: string };
 
@@ -29,9 +30,7 @@ export default function Nudges({
     let cancelled = false;
 
     async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
 
       if (!user || cancelled) return;
 

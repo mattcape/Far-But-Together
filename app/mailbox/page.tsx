@@ -15,6 +15,7 @@ import {
   type Recipient,
 } from "@/lib/messages";
 import { CARD, FOCUS, INPUT, PRIMARY_BUTTON } from "@/lib/ui";
+import { getCurrentUser } from "@/lib/auth";
 
 type Msg = Message & { receiver_id: string };
 
@@ -108,9 +109,7 @@ export default function MailboxPage() {
     let timer: number | undefined;
 
     async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
 
       if (cancelled || !user) return;
 

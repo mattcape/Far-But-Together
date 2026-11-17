@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { CARD, INPUT, PRIMARY_BUTTON } from "@/lib/ui";
+import { getCurrentUser } from "@/lib/auth";
 
 function allZones(): string[] {
   const intl = Intl as unknown as {
@@ -24,9 +25,7 @@ export default function TimezoneSettings() {
     let cancelled = false;
 
     async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
 
       if (!user || cancelled) return;
 
@@ -58,9 +57,7 @@ export default function TimezoneSettings() {
     setBusy(true);
     setMessage("");
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
 
     if (!user) return;
 

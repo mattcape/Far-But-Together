@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import PageFrame from "@/components/PageFrame";
+import SharedPageState from "@/components/SharedPageState";
 import { CARD } from "@/lib/ui";
 
 type Checkin = {
@@ -39,9 +40,7 @@ export default function ViewCheckinsPage() {
       width="max-w-4xl"
     >
       {!loaded ? (
-        <p role="status" className="text-ink/75">
-          Loading...
-        </p>
+        <SharedPageState kind="loading" />
       ) : checkins.length === 0 ? (
         <div className={`${CARD} p-6 text-ink/80`}>
           No check-ins yet. Share your first one from Daily check-in.

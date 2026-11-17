@@ -10,6 +10,7 @@ import DeleteAccount from "@/components/DeleteAccount";
 import RelationshipSettings from "@/components/RelationshipSettings";
 import TimezoneSettings from "@/components/TimezoneSettings";
 import { CARD, INPUT, PRIMARY_BUTTON, SECONDARY_BUTTON } from "@/lib/ui";
+import { getCurrentUser } from "@/lib/auth";
 
 type Message = { kind: "ok" | "error"; text: string } | null;
 
@@ -46,9 +47,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
 
       if (!user) {
         window.location.href = "/login";

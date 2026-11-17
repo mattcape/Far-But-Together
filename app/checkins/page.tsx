@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import PageFrame from "@/components/PageFrame";
 import StatusMessage from "@/components/StatusMessage";
 import { CARD, INPUT, PRIMARY_BUTTON } from "@/lib/ui";
+import { getCurrentUser } from "@/lib/auth";
 
 export default function CheckinsPage() {
   const [mood, setMood] = useState(5);
@@ -18,9 +19,7 @@ export default function CheckinsPage() {
     e.preventDefault();
     setMessage("");
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
 
     if (!user) return;
 

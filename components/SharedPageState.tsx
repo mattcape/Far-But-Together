@@ -15,10 +15,21 @@ export default function SharedPageState({
   const link = `font-semibold text-ink underline decoration-rose-deep decoration-2 underline-offset-4 ${FOCUS}`;
 
   if (kind === "loading") {
+    // A placeholder shaped like the content, so the page doesn't jump when
+    // it arrives.
     return (
-      <p role="status" className="text-ink/75">
-        Loading...
-      </p>
+      <div role="status" aria-label="Loading" className="space-y-4">
+        {[0, 1].map((i) => (
+          <div
+            key={i}
+            className={`${CARD} animate-pulse space-y-3 p-6 motion-reduce:animate-none`}
+          >
+            <div className="h-6 w-1/3 rounded-full bg-ink/10" />
+            <div className="h-4 w-full rounded-full bg-ink/10" />
+            <div className="h-4 w-2/3 rounded-full bg-ink/10" />
+          </div>
+        ))}
+      </div>
     );
   }
 
