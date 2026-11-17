@@ -71,6 +71,9 @@ export default function RootLayout({
         <Footer />
         {/* Anonymous page-speed measurements; only active once Speed Insights
             is switched on for the project in Vercel. */}
+        <Script id="speed-insights-init" strategy="afterInteractive">
+          {`window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };`}
+        </Script>
         <Script
           src="/_vercel/speed-insights/script.js"
           strategy="afterInteractive"
