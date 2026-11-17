@@ -18,6 +18,7 @@ import {
   Timer,
   Gift,
   Trophy,
+  Award,
   UserPlus,
   Users,
   type LucideIcon,
@@ -122,6 +123,12 @@ export const PLAN_AND_REMEMBER: Destination[] = [
 ];
 
 export const PEOPLE: Destination[] = [
+  {
+    href: "/rewards",
+    title: "Friend rewards",
+    description: "Everything you've earned with your friends.",
+    icon: Award,
+  },
   {
     href: "/friends",
     title: "Find friends",

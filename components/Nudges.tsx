@@ -6,6 +6,8 @@ import { differenceInCalendarDays, format } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { parseDay } from "@/lib/relationship";
 import { myTimeZone } from "@/lib/tz";
+import { loadFriendStats } from "@/lib/friendStats";
+import { streakAtRisk } from "@/lib/streaks";
 import { CARD, FOCUS } from "@/lib/ui";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -23,6 +25,34 @@ export default function Nudges({
   visitDate: Date | null;
 }) {
   const [extra, setExtra] = useState<Nudge[]>([]);
+  const [streakNudges, setStreakNudges] = useState<Nudge[]>([]);
+
+  // Friend streaks that end at midnight unless you get in touch today.
+  useEffect(() => {
+    let cancelled = false;
+
+    loadFriendStats().then((friends) => {
+      if (cancelled) return;
+
+      setStreakNudges(
+        friends
+          .map((f) => ({ f, run: streakAtRisk(f.messageDays) }))
+          .filter(({ run }) => run >= 2)
+          .sort((a, b) => b.run - a.run)
+          .slice(0, 2)
+          .map(({ f, run }) => ({
+            key: `streak-${f.id}`,
+            text: `Your ${run}-day streak with ${f.name} ends today.`,
+            href: `/friends-list/${f.id}`,
+            action: "Keep it going",
+          }))
+      );
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (relationshipId === null) return;
@@ -123,7 +153,7 @@ export default function Nudges({
     };
   }, [relationshipId]);
 
-  const nudges: Nudge[] = [...extra];
+  const nudges: Nudge[] = [...streakNudges, ...extra];
 
   if (visitDate) {
     const days = differenceInCalendarDays(visitDate, new Date());

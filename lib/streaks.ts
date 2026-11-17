@@ -47,3 +47,15 @@ export function currentStreak(days: string[], today: Date = new Date()): number 
 
   return run;
 }
+
+// A streak that will end at midnight: you were in touch yesterday but not yet
+// today. Returns its length, or 0 when nothing is at risk.
+export function streakAtRisk(days: string[], today: Date = new Date()): number {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const key = (d: Date) =>
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+  if (days.includes(key(today))) return 0;
+
+  return currentStreak(days, today);
+}

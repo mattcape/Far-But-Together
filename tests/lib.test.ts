@@ -142,3 +142,21 @@ describe("takeNewRewards", () => {
     expect(takeNewRewards("u", "f", { days: 95, bestStreak: 0, messages: 0 })).toEqual([]);
   });
 });
+
+import { streakAtRisk } from "@/lib/streaks";
+
+describe("streakAtRisk", () => {
+  const today = new Date(2026, 5, 10);
+
+  it("flags a streak that ends today", () => {
+    expect(streakAtRisk(["2026-06-09", "2026-06-08"], today)).toBe(2);
+  });
+
+  it("is quiet once you've been in touch today", () => {
+    expect(streakAtRisk(["2026-06-10", "2026-06-09"], today)).toBe(0);
+  });
+
+  it("is quiet when the streak already ended", () => {
+    expect(streakAtRisk(["2026-06-07", "2026-06-06"], today)).toBe(0);
+  });
+});
