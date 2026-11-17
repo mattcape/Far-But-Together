@@ -75,3 +75,46 @@ describe("milestones", () => {
     expect(next?.daysAway).toBe(99);
   });
 });
+
+import { currentStreak } from "@/lib/streaks";
+import { friendsFor, nextReward, rewardStatuses } from "@/lib/friendship";
+
+describe("currentStreak", () => {
+  const today = new Date(2026, 5, 10);
+
+  it("counts back from today", () => {
+    expect(currentStreak(["2026-06-10", "2026-06-09", "2026-06-08"], today)).toBe(3);
+  });
+
+  it("keeps a run that ended yesterday", () => {
+    expect(currentStreak(["2026-06-09", "2026-06-08"], today)).toBe(2);
+  });
+
+  it("is 0 after a missed day", () => {
+    expect(currentStreak(["2026-06-07"], today)).toBe(0);
+  });
+});
+
+describe("friendship rewards", () => {
+  it("earns rewards when a threshold is reached", () => {
+    const earned = rewardStatuses({ days: 31, bestStreak: 3, messages: 9 })
+      .filter((r) => r.earned)
+      .map((r) => r.id);
+
+    expect(earned).toEqual(["d7", "d30", "s3"]);
+  });
+
+  it("points at the closest reward not yet earned", () => {
+    const next = nextReward({ days: 0, bestStreak: 0, messages: 9 });
+
+    expect(next?.id).toBe("m10");
+  });
+
+  it("formats how long you've been friends", () => {
+    const now = new Date(2026, 5, 10);
+
+    expect(friendsFor(new Date(2026, 5, 10), now)).toBe("Today");
+    expect(friendsFor(new Date(2026, 5, 5), now)).toBe("5 days");
+    expect(friendsFor(new Date(2026, 2, 1), now)).toBe("3 months, 9 days");
+  });
+});

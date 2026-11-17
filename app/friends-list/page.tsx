@@ -1,18 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import PageFrame from "@/components/PageFrame";
 import SharedPageState from "@/components/SharedPageState";
 import SentRequests from "@/components/SentRequests";
 import StatusMessage from "@/components/StatusMessage";
-import { CARD, FOCUS, INPUT } from "@/lib/ui";
+import { CARD, FOCUS } from "@/lib/ui";
 import { getCurrentUser } from "@/lib/auth";
-import {
-  NICKNAME_MAX,
-  loadNicknames,
-  saveNickname,
-} from "@/lib/nicknames";
+import { loadNicknames } from "@/lib/nicknames";
 
 type Friend = {
   id: string;
@@ -22,8 +20,6 @@ type Friend = {
 export default function FriendsListPage() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [nicknames, setNicknames] = useState<Record<string, string>>({});
-  const [editing, setEditing] = useState<string | null>(null);
-  const [draft, setDraft] = useState("");
   const [hasPartner, setHasPartner] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [message, setMessage] = useState("");
@@ -70,7 +66,6 @@ export default function FriendsListPage() {
       }
 
       setNicknames(await loadNicknames());
-
       setLoaded(true);
     }
 
@@ -101,67 +96,15 @@ export default function FriendsListPage() {
     }
 
     setFailed(false);
-    setMessage(`Relationship request sent to ${friend.display_name}.`);
-  }
-
-  async function saveName(friend: Friend) {
-    const error = await saveNickname(friend.id, draft);
-
-    if (error) {
-      setFailed(true);
-      setMessage(error);
-      return;
-    }
-
-    setNicknames((current) => {
-      const next = { ...current };
-
-      if (draft.trim()) next[friend.id] = draft.trim().slice(0, NICKNAME_MAX);
-      else delete next[friend.id];
-
-      return next;
-    });
-    setEditing(null);
-    setFailed(false);
-    setMessage(draft.trim() ? "Nickname saved." : "Nickname removed.");
-  }
-
-  async function removeFriend(friend: Friend) {
-    if (
-      !window.confirm(
-        `Remove ${friend.display_name} from your friends? You can add them again later.`
-      )
-    )
-      return;
-
-    setMessage("");
-
-    const user = await getCurrentUser();
-
-    if (!user) return;
-
-    const { error } = await supabase
-      .from("friendships")
-      .delete()
-      .or(
-        `and(user_one.eq.${user.id},user_two.eq.${friend.id}),and(user_one.eq.${friend.id},user_two.eq.${user.id})`
-      );
-
-    if (error) {
-      setFailed(true);
-      setMessage(error.message);
-      return;
-    }
-
-    setFriends((current) => current.filter((f) => f.id !== friend.id));
-    setFailed(false);
-    setMessage(`${friend.display_name} was removed from your friends.`);
+    setMessage(
+      `Relationship request sent to ${nicknames[friend.id] || friend.display_name}.`
+    );
   }
 
   return (
     <PageFrame
       title="My friends"
-      subtitle="Send a relationship request to the person you're together with."
+      subtitle="Open a friend to see how long you've been friends, your streak and rewards."
     >
       <StatusMessage message={message} tone={failed ? "error" : "success"} />
 
@@ -178,73 +121,26 @@ export default function FriendsListPage() {
               key={friend.id}
               className={`${CARD} flex flex-wrap items-center justify-between gap-x-4 gap-y-3 p-4`}
             >
-              {editing === friend.id ? (
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    saveName(friend);
-                  }}
-                  className="flex min-w-0 flex-1 flex-wrap items-center gap-2"
-                >
-                  <label htmlFor={`nick-${friend.id}`} className="sr-only">
-                    Nickname for {friend.display_name}
-                  </label>
-                  <input
-                    id={`nick-${friend.id}`}
-                    type="text"
-                    autoFocus
-                    maxLength={NICKNAME_MAX}
-                    placeholder={friend.display_name}
-                    className={`${INPUT} min-w-0 flex-1`}
-                    value={draft}
-                    onChange={(e) => setDraft(e.target.value)}
-                  />
-                  <button
-                    type="submit"
-                    className={`rounded-full bg-rose-deep px-4 py-2 text-sm font-semibold text-white ${FOCUS}`}
-                  >
-                    Save
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditing(null)}
-                    className={`rounded-full px-3 py-2 text-sm font-semibold text-ink/75 hover:bg-white ${FOCUS}`}
-                  >
-                    Cancel
-                  </button>
-                </form>
-              ) : (
-                <div className="min-w-0 flex-1 basis-40">
-                  <div className="font-semibold text-ink">
-                    {nicknames[friend.id] || friend.display_name}
-                  </div>
-                  {nicknames[friend.id] ? (
-                    <div className="text-sm text-ink/70">
-                      {friend.display_name}
-                    </div>
-                  ) : null}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDraft(nicknames[friend.id] ?? "");
-                      setEditing(friend.id);
-                    }}
-                    className={`mt-1 whitespace-nowrap rounded-full text-sm font-semibold text-ink/75 underline decoration-rose-deep decoration-2 underline-offset-4 ${FOCUS}`}
-                  >
-                    {nicknames[friend.id] ? "Change nickname" : "Add nickname"}
-                  </button>
-                </div>
-              )}
-
-              {editing === friend.id ? null : (
-              <div className="flex flex-wrap items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => removeFriend(friend)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold text-ink/70 hover:bg-white hover:text-rose-deep ${FOCUS}`}
+              <Link
+                href={`/friends-list/${friend.id}`}
+                className={`group flex min-w-0 flex-1 basis-40 items-center justify-between gap-2 rounded-xl py-1 ${FOCUS}`}
               >
-                Remove
-              </button>
+                <span className="min-w-0">
+                  <span className="block font-semibold text-ink group-hover:underline">
+                    {nicknames[friend.id] || friend.display_name}
+                  </span>
+                  {nicknames[friend.id] ? (
+                    <span className="block text-sm text-ink/70">
+                      {friend.display_name}
+                    </span>
+                  ) : null}
+                </span>
+                <ChevronRight
+                  className="h-5 w-5 shrink-0 text-ink/50"
+                  aria-hidden="true"
+                />
+              </Link>
+
               <button
                 type="button"
                 disabled={hasPartner}
@@ -253,8 +149,6 @@ export default function FriendsListPage() {
               >
                 {hasPartner ? "You have a partner" : "Send relationship request"}
               </button>
-              </div>
-              )}
             </li>
           ))}
         </ul>
