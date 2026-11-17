@@ -8,10 +8,10 @@ export default function Footer() {
   return (
     <footer className="px-6 py-6 text-center text-sm text-ink/75">
       <nav aria-label="Legal" className="flex justify-center gap-5">
-        <Link href="/privacy" className={link}>
+        <Link href="/privacy" prefetch={false} className={link}>
           Privacy policy
         </Link>
-        <Link href="/terms" className={link}>
+        <Link href="/terms" prefetch={false} className={link}>
           Terms of use
         </Link>
       </nav>

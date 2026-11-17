@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Figtree, Fraunces, Young_Serif } from "next/font/google";
 import AuthGuard from "@/components/AuthGuard";
 import Footer from "@/components/Footer";
@@ -68,6 +69,12 @@ export default function RootLayout({
         <NavBar />
         <AuthGuard>{children}</AuthGuard>
         <Footer />
+        {/* Anonymous page-speed measurements; only active once Speed Insights
+            is switched on for the project in Vercel. */}
+        <Script
+          src="/_vercel/speed-insights/script.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

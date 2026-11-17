@@ -21,8 +21,12 @@ export default function PrivacyPage() {
           ]}
         />
         <p>
-          We do not use advertising or analytics trackers, and we do not build
-          profiles of you for any other purpose.
+          We measure how fast our pages load using Vercel Speed Insights. It
+          records anonymous timings, such as how long a page took to appear,
+          along with your device type and country. It does not use cookies,
+          follow you between websites, or identify you. We do not use
+          advertising trackers, and we do not build profiles of you for any
+          other purpose.
         </p>
       </Section>
 
