@@ -124,12 +124,6 @@ export default function NavBar() {
           </Link>
         ) : (
           <>
-            <Link
-              href="/dashboard"
-              className={`whitespace-nowrap py-2 hover:underline ${FOCUS}`}
-            >
-              Dashboard
-            </Link>
             {signedIn && unread !== null ? (
               <Link
                 href="/mailbox"

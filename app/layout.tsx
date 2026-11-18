@@ -3,6 +3,7 @@ import Script from "next/script";
 import { Figtree, Fraunces, Young_Serif } from "next/font/google";
 import AuthGuard from "@/components/AuthGuard";
 import Footer from "@/components/Footer";
+import TabBar from "@/components/TabBar";
 import NavBar from "@/components/NavBar";
 import "./globals.css";
 
@@ -91,6 +92,7 @@ export default function RootLayout({
         <NavBar />
         <AuthGuard>{children}</AuthGuard>
         <Footer />
+        <TabBar />
         {/* Anonymous page-speed measurements; only active once Speed Insights
             is switched on for the project in Vercel. */}
         <Script id="speed-insights-init" strategy="afterInteractive">

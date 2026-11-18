@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import Link from "next/link";
 import PageFrame from "@/components/PageFrame";
 import { supabase } from "@/lib/supabase";
 import { saveDisplayName } from "@/lib/profile";
@@ -308,6 +309,16 @@ export default function SettingsPage() {
         <AppearanceSettings />
 
         <RelationshipSettings />
+
+        <p className="px-1 text-ink/85">
+          Got a request to be someone&apos;s partner?{" "}
+          <Link
+            href="/relationship-requests"
+            className="font-semibold text-ink underline decoration-rose-deep decoration-2 underline-offset-4"
+          >
+            See relationship requests
+          </Link>
+        </p>
 
         <DataExport />
 

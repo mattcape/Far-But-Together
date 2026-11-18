@@ -13,17 +13,38 @@ import { getCurrentUser } from "@/lib/auth";
 
 type Nudge = { key: string; text: string; href: string; action: string };
 
-// Gentle reminders on the dashboard. Each one links to the page where you
-// can act on it, and the whole card disappears when there is nothing to say.
+// Most important first. Only the top reminder shows until you ask for more.
+const PRIORITY = [
+  "surprise",
+  "messages",
+  "photo",
+  "streak",
+  "visit",
+  "countdown",
+  "week",
+  "checkin",
+];
+
+function rank(n: Nudge): number {
+  const i = PRIORITY.findIndex((p) => n.key === p || n.key.startsWith(`${p}-`));
+
+  return i === -1 ? PRIORITY.length : i;
+}
+
+// Gentle reminders on the dashboard, one at a time. Each links to the page
+// where you can act on it, and the card disappears when there is nothing to say.
 export default function Nudges({
   relationshipId,
   checkedInToday,
   visitDate,
+  unread,
 }: {
   relationshipId: string | number | null;
   checkedInToday: boolean;
   visitDate: Date | null;
+  unread: number | null;
 }) {
+  const [showAll, setShowAll] = useState(false);
   const [extra, setExtra] = useState<Nudge[]>([]);
   const [streakNudges, setStreakNudges] = useState<Nudge[]>([]);
 
@@ -177,12 +198,35 @@ export default function Nudges({
     });
   }
 
+  if (unread !== null && unread > 0) {
+    nudges.push({
+      key: "messages",
+      text: unread === 1 ? "You have 1 new message." : `You have ${unread} new messages.`,
+      href: "/mailbox",
+      action: "Open mailbox",
+    });
+  }
+
+  // Sundays: the week in review is ready.
+  if (new Date().getDay() === 0 && relationshipId !== null) {
+    nudges.push({
+      key: "week",
+      text: "Your week together is ready.",
+      href: "/recap",
+      action: "See it",
+    });
+  }
+
   if (nudges.length === 0) return null;
 
+  const sorted = [...nudges].sort((a, b) => rank(a) - rank(b));
+  const shown = showAll ? sorted : sorted.slice(0, 1);
+  const hidden = sorted.length - shown.length;
+
   return (
-    <section aria-label="Reminders" className={`${CARD} mb-6 p-5`}>
+    <section aria-label="Reminders" className={`${CARD} p-5`}>
       <ul className="space-y-3">
-        {nudges.map((n) => (
+        {shown.map((n) => (
           <li
             key={n.key}
             className="flex flex-wrap items-center justify-between gap-3"
@@ -197,6 +241,15 @@ export default function Nudges({
           </li>
         ))}
       </ul>
+      {hidden > 0 ? (
+        <button
+          type="button"
+          onClick={() => setShowAll(true)}
+          className={`mt-3 text-sm font-semibold text-ink/75 underline decoration-rose-deep decoration-2 underline-offset-4 ${FOCUS}`}
+        >
+          {hidden} more reminder{hidden === 1 ? "" : "s"}
+        </button>
+      ) : null}
     </section>
   );
 }

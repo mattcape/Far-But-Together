@@ -1,4 +1,5 @@
 import HomeButton from "@/components/HomeButton";
+import SubTabs from "@/components/SubTabs";
 import { SKY_BACKGROUND } from "@/lib/ui";
 
 // The shared frame for pages inside the app: sky background, a way back
@@ -22,6 +23,8 @@ export default function PageFrame({
     >
       <div className={`mx-auto ${width}`}>
         <HomeButton />
+
+        <SubTabs />
 
         <h1 className="font-display text-4xl text-ink sm:text-5xl">{title}</h1>
 

@@ -2,13 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  TOGETHER,
-  PLAN_AND_REMEMBER,
-  PEOPLE,
-  ACCOUNT,
-  type Destination,
-} from "@/lib/destinations";
+import { TABS, type Destination } from "@/lib/destinations";
 import CloudIntro from "@/components/CloudIntro";
 import CloudShape from "@/components/CloudShape";
 import ConnectionArc from "@/components/ConnectionArc";
@@ -125,40 +119,6 @@ function FeatureTile({
       </div>
       <div className="mt-2 leading-relaxed text-ink/75">
         {destination.description}
-      </div>
-    </Link>
-  );
-}
-
-function ListLink({
-  destination,
-  href,
-}: {
-  destination: Destination;
-  href: string;
-}) {
-  const Icon = destination.icon;
-
-  return (
-    <Link
-      href={href}
-      className={`flex items-start gap-4 rounded-2xl bg-white/60 p-4 ring-1 ring-white/80 hover:bg-white/90 ${FOCUS}`}
-    >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-rose-deep">
-        <Icon className="h-5 w-5" aria-hidden="true" />
-      </div>
-      <div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-semibold text-ink">{destination.title}</span>
-          {destination.soon ? (
-            <span className="rounded-full bg-lantern/30 px-2 py-0.5 text-xs font-medium text-ink">
-              Coming soon
-            </span>
-          ) : null}
-        </div>
-        <div className="mt-0.5 text-sm leading-relaxed text-ink/75">
-          {destination.description}
-        </div>
       </div>
     </Link>
   );
@@ -311,38 +271,14 @@ export default function Home() {
             </p>
           ) : null}
 
-          <Group title="Together">
+          <Group title="Where to?">
             <div className="grid gap-5 md:grid-cols-3">
-              {TOGETHER.map((d) => (
+              {TABS.map((d) => (
                 <FeatureTile
                   key={d.href}
                   destination={d}
                   href={target(d.href)}
                 />
-              ))}
-            </div>
-          </Group>
-
-          <Group title="Plan and remember">
-            <div className="grid gap-3 sm:grid-cols-2">
-              {PLAN_AND_REMEMBER.map((d) => (
-                <ListLink key={d.href} destination={d} href={target(d.href)} />
-              ))}
-            </div>
-          </Group>
-
-          <Group title="People">
-            <div className="grid gap-3 sm:grid-cols-2">
-              {PEOPLE.map((d) => (
-                <ListLink key={d.href} destination={d} href={target(d.href)} />
-              ))}
-            </div>
-          </Group>
-
-          <Group title="Your account">
-            <div className="grid gap-3 sm:grid-cols-2">
-              {ACCOUNT.map((d) => (
-                <ListLink key={d.href} destination={d} href={target(d.href)} />
               ))}
             </div>
           </Group>
