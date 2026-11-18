@@ -75,6 +75,15 @@ function Status({ data }: { data: HomeData }) {
 
         {data.anniversary ? <TogetherClock since={data.anniversary} compact /> : null}
 
+        {!data.anniversary ? (
+          <p className="mt-1 text-lg text-ink/85">
+            <Link href="/dashboard#together" className={link}>
+              Add the day you got together
+            </Link>{" "}
+            to count your days.
+          </p>
+        ) : null}
+
         {data.anniversary && todaysMilestones(data.anniversary).length > 0 ? (
           <p className="mt-1 text-lg font-semibold text-rose-deep">
             Happy {todaysMilestones(data.anniversary).join(" and ")}!

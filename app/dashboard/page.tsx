@@ -338,13 +338,16 @@ export default function Dashboard() {
 
     if (!anniversaryInput || relationshipId === null) return;
 
-    const { error } = await supabase
+    const { data: saved, error } = await supabase
       .from("relationships")
       .update({ anniversary: anniversaryInput })
-      .eq("id", relationshipId);
+      .eq("id", relationshipId)
+      .select("id");
 
-    if (error) {
-      setAnniversaryError(error.message);
+    if (error || !saved || saved.length === 0) {
+      setAnniversaryError(
+        error?.message ?? "That didn't save. Refresh the page and try again."
+      );
       return;
     }
 
@@ -383,61 +386,20 @@ export default function Dashboard() {
 
   const link = `font-semibold text-ink underline decoration-rose-deep decoration-2 underline-offset-4 ${FOCUS}`;
 
-  return (
-    <div className="dash">
-    <WelcomeTour />
-    <ScrollMemory storageKey="fbt-dashboard-scroll" />
-    <PageFrame
-      title={`${greeting}, ${name}`}
-      subtitle={
-        significantOther === "None"
-          ? "Connect with your partner to see your countdown and their check-ins."
-          : `Together with ${significantOther}`
-      }
-      width="max-w-4xl"
-    >
-      {anniversary ? (
-        <MilestoneBanner since={anniversary} partnerName={significantOther} />
-      ) : null}
-
-      {unread !== null && unread > 0 ? (
-        <Link
-          href="/mailbox"
-          className={`${CARD} mb-6 flex items-center justify-between gap-4 p-5 hover:bg-white ${FOCUS}`}
+  const togetherSection =
+    relationshipId !== null ? (
+      <section
+          id="together"
+          className={`${CARD} p-6 sm:p-8 ${anniversary ? "mt-6" : "mb-6 ring-2 ring-rose-deep/30"}`}
         >
-          <span className="font-display text-xl text-ink">
-            You have {unread === 1 ? "1 new message" : `${unread} new messages`}
-          </span>
-          <span className="font-semibold text-rose-deep">Open mailbox</span>
-        </Link>
-      ) : null}
-
-      <SundayRecap />
-
-      <Nudges
-        relationshipId={relationshipId}
-        checkedInToday={checkedInToday}
-        visitDate={visitDate}
-      />
-
-      <section className={`${CARD} p-6 sm:p-8`}>
-        <h2 className="font-display text-2xl text-ink">Next visit</h2>
-        <p className="mt-3 font-display text-3xl leading-snug text-rose-deep sm:text-4xl">
-          {countdown}
-        </p>
-        {!visitDate ? (
-          <p className="mt-3 text-ink/80">
-            <Link href="/visits" className={link}>
-              Set your next visit date
-            </Link>{" "}
-            to start counting down.
-          </p>
-        ) : null}
-      </section>
-
-      {relationshipId !== null ? (
-        <section className={`${CARD} mt-6 p-6 sm:p-8`}>
-          <h2 className="font-display text-2xl text-ink">Together</h2>
+          <h2 className="font-display text-2xl text-ink">
+            {anniversary ? "Together" : "When did you two get together?"}
+          </h2>
+          {!anniversary ? (
+            <p className="mt-1 text-ink/80">
+              Add your anniversary to start counting your days together.
+            </p>
+          ) : null}
 
           {anniversary && !editingAnniversary ? (
             <>
@@ -490,7 +452,63 @@ export default function Dashboard() {
             </p>
           ) : null}
         </section>
+    ) : null;
+
+  return (
+    <div className="dash">
+    <WelcomeTour />
+    <ScrollMemory storageKey="fbt-dashboard-scroll" />
+    <PageFrame
+      title={`${greeting}, ${name}`}
+      subtitle={
+        significantOther === "None"
+          ? "Connect with your partner to see your countdown and their check-ins."
+          : `Together with ${significantOther}`
+      }
+      width="max-w-4xl"
+    >
+      {!anniversary ? togetherSection : null}
+
+      {anniversary ? (
+        <MilestoneBanner since={anniversary} partnerName={significantOther} />
       ) : null}
+
+      {unread !== null && unread > 0 ? (
+        <Link
+          href="/mailbox"
+          className={`${CARD} mb-6 flex items-center justify-between gap-4 p-5 hover:bg-white ${FOCUS}`}
+        >
+          <span className="font-display text-xl text-ink">
+            You have {unread === 1 ? "1 new message" : `${unread} new messages`}
+          </span>
+          <span className="font-semibold text-rose-deep">Open mailbox</span>
+        </Link>
+      ) : null}
+
+      <SundayRecap />
+
+      <Nudges
+        relationshipId={relationshipId}
+        checkedInToday={checkedInToday}
+        visitDate={visitDate}
+      />
+
+      <section className={`${CARD} p-6 sm:p-8`}>
+        <h2 className="font-display text-2xl text-ink">Next visit</h2>
+        <p className="mt-3 font-display text-3xl leading-snug text-rose-deep sm:text-4xl">
+          {countdown}
+        </p>
+        {!visitDate ? (
+          <p className="mt-3 text-ink/80">
+            <Link href="/visits" className={link}>
+              Set your next visit date
+            </Link>{" "}
+            to start counting down.
+          </p>
+        ) : null}
+      </section>
+
+      {anniversary ? togetherSection : null}
 
       <section className={`${CARD} mt-6 p-6 sm:p-8`}>
         <h2 className="font-display text-2xl text-ink">Your check-in streak</h2>

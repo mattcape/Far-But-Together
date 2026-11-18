@@ -48,7 +48,7 @@ export default function ViewCheckinsPage() {
       ) : (
         <ul className="space-y-4">
           {checkins.map((checkin) => (
-            <li key={checkin.id} className={`${CARD} p-6`}>
+            <li key={checkin.id ?? checkin.created_at} className={`${CARD} p-6`}>
               <p className="font-display text-2xl text-ink">
                 Mood: {checkin.mood}/10
               </p>
