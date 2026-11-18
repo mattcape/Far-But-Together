@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import PageFrame from "@/components/PageFrame";
 import SharedPageState from "@/components/SharedPageState";
+import { getCouple } from "@/lib/relationship";
 import { CARD } from "@/lib/ui";
 
 type Checkin = {
   id: string;
+  user_id: string;
   mood: number;
   thoughts: string;
   gratitude: string;
@@ -17,13 +19,21 @@ type Checkin = {
 export default function ViewCheckinsPage() {
   const [checkins, setCheckins] = useState<Checkin[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [me, setMe] = useState<string | null>(null);
+  const [partner, setPartner] = useState("Your partner");
 
   useEffect(() => {
     async function loadCheckins() {
-      const { data, error } = await supabase
-        .from("checkins")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const [{ data, error }, couple] = await Promise.all([
+        supabase
+          .from("checkins")
+          .select("*")
+          .order("created_at", { ascending: false }),
+        getCouple(),
+      ]);
+
+      if (couple.status === "ok") setPartner(couple.partnerName);
+      if (couple.status !== "signed-out") setMe(couple.userId);
 
       if (error) console.error(error);
       if (data) setCheckins(data);
@@ -49,7 +59,10 @@ export default function ViewCheckinsPage() {
         <ul className="space-y-4">
           {checkins.map((checkin) => (
             <li key={checkin.id ?? checkin.created_at} className={`${CARD} p-6`}>
-              <p className="font-display text-2xl text-ink">
+              <p className="font-semibold text-rose-deep">
+                {checkin.user_id === me ? "You" : partner}
+              </p>
+              <p className="mt-1 font-display text-2xl text-ink">
                 Mood: {checkin.mood}/10
               </p>
 
