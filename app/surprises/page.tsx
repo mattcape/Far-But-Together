@@ -211,7 +211,7 @@ export default function SurprisesPage() {
             </label>
             <textarea
               id="s-body"
-              rows={5}
+              rows={4}
               maxLength={2000}
               className={INPUT}
               value={body}

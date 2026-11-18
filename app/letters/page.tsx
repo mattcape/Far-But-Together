@@ -303,7 +303,7 @@ export default function LettersPage() {
             </label>
             <textarea
               id="letter-body"
-              rows={6}
+              rows={5}
               maxLength={2000}
               className={INPUT}
               value={body}

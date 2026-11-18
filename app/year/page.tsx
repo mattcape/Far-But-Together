@@ -7,13 +7,42 @@ import SharedPageState from "@/components/SharedPageState";
 import { supabase } from "@/lib/supabase";
 import { getCouple, isMissingTable } from "@/lib/relationship";
 import { longestStreak } from "@/lib/streaks";
+import { daysUntilYearReview, summarizeMoods, yearReviewOpen } from "@/lib/yearStats";
 import { CARD, FOCUS } from "@/lib/ui";
 
 type Row = { user_id: string; mood: number; created_at: string };
 
+const PAGE = 1000;
+
+// The database returns at most 1000 rows per request, so read in pages.
+async function loadCheckins(ids: string[], year: number): Promise<Row[]> {
+  const all: Row[] = [];
+
+  for (let from = 0; from < 20000; from += PAGE) {
+    const { data } = await supabase
+      .from("checkins")
+      .select("user_id, mood, created_at")
+      .in("user_id", ids)
+      .gte("created_at", new Date(year, 0, 1).toISOString())
+      .lt("created_at", new Date(year + 1, 0, 1).toISOString())
+      .order("created_at", { ascending: true })
+      .range(from, from + PAGE - 1);
+
+    const rows = (data ?? []) as Row[];
+
+    all.push(...rows);
+
+    if (rows.length < PAGE) break;
+  }
+
+  return all;
+}
+
 type Review = {
   checkins: number;
   average: number | null;
+  mine: number | null;
+  theirs: number | null;
   bestMonth: { name: string; average: number } | null;
   streak: number;
   memories: number | null;
@@ -54,8 +83,11 @@ function Tile({ value, label }: { value: string; label: string }) {
 }
 
 export default function YearPage() {
-  const thisYear = new Date().getFullYear();
-  const [year, setYear] = useState(thisYear);
+  const now = new Date();
+  const thisYear = now.getFullYear();
+  const open = yearReviewOpen(now);
+  const [year, setYear] = useState(open ? thisYear : thisYear - 1);
+  const locked = year === thisYear && !open;
   const [view, setView] = useState<View>("loading");
   const [review, setReview] = useState<Review | null>(null);
 
@@ -63,6 +95,8 @@ export default function YearPage() {
     let cancelled = false;
 
     async function load() {
+      if (locked) return;
+
       setView("loading");
 
       const couple = await getCouple();
@@ -82,14 +116,8 @@ export default function YearPage() {
       const from = `${year}-01-01`;
       const to = `${year}-12-31`;
 
-      const [{ data }, memories, dates, visits, photos] = await Promise.all([
-        supabase
-          .from("checkins")
-          .select("user_id, mood, created_at")
-          .in("user_id", [couple.userId, couple.partnerId])
-          .gte("created_at", new Date(year, 0, 1).toISOString())
-          .lt("created_at", new Date(year + 1, 0, 1).toISOString())
-          .limit(5000),
+      const [rows, memories, dates, visits, photos] = await Promise.all([
+        loadCheckins([couple.userId, couple.partnerId], year),
         countIn("memories", "memory_date", couple.relationshipId, from, to),
         countIn("dates", "date_on", couple.relationshipId, from, to),
         countIn("visits", "visit_date", couple.relationshipId, from, to),
@@ -98,33 +126,19 @@ export default function YearPage() {
 
       if (cancelled) return;
 
-      const rows = (data ?? []) as Row[];
-      const byMonth = new Map<number, number[]>();
-
-      for (const r of rows) {
-        const month = new Date(r.created_at).getMonth();
-        byMonth.set(month, [...(byMonth.get(month) ?? []), r.mood]);
-      }
-
-      let bestMonth: Review["bestMonth"] = null;
-
-      for (const [month, moods] of byMonth) {
-        const avg = moods.reduce((a, b) => a + b, 0) / moods.length;
-
-        if (moods.length >= 3 && (!bestMonth || avg > bestMonth.average)) {
-          bestMonth = {
-            name: format(new Date(year, month, 1), "MMMM"),
-            average: avg,
-          };
-        }
-      }
+      const moods = summarizeMoods(rows, couple.userId);
 
       setReview({
         checkins: rows.length,
-        average: rows.length
-          ? rows.reduce((s, r) => s + r.mood, 0) / rows.length
+        average: moods.average,
+        mine: moods.mine,
+        theirs: moods.theirs,
+        bestMonth: moods.bestMonth
+          ? {
+              name: format(new Date(year, moods.bestMonth.month, 1), "MMMM"),
+              average: moods.bestMonth.average,
+            }
           : null,
-        bestMonth,
         streak: longestStreak(
           rows.map((r) => format(new Date(r.created_at), "yyyy-MM-dd")),
         ),
@@ -142,7 +156,7 @@ export default function YearPage() {
     return () => {
       cancelled = true;
     };
-  }, [year]);
+  }, [year, locked]);
 
   const tab = (y: number) =>
     `rounded-full px-4 py-1.5 font-semibold ${FOCUS} ${
@@ -173,21 +187,45 @@ export default function YearPage() {
         </button>
       </div>
 
-      {view !== "ready" || !review ? (
+      {locked ? (
+        <section className={`${CARD} p-6 sm:p-8`}>
+          <p className="font-display text-2xl leading-snug text-ink sm:text-3xl">
+            Your {thisYear} in review opens November 1.
+          </p>
+          <p className="mt-3 text-ink/80">
+            {(() => {
+              const d = daysUntilYearReview(now);
+
+              return `${d} day${d === 1 ? "" : "s"} to go. Keep checking in and saving memories, and it will be waiting for you.`;
+            })()}
+          </p>
+          <button
+            type="button"
+            onClick={() => setYear(thisYear - 1)}
+            className={`mt-5 rounded-full bg-white px-5 py-2 font-semibold text-rose-deep ring-1 ring-ink/10 hover:bg-blush ${FOCUS}`}
+          >
+            See {thisYear - 1} instead
+          </button>
+        </section>
+      ) : view !== "ready" || !review ? (
         <SharedPageState kind={view === "ready" ? "loading" : view} />
       ) : (
         <section className={`${CARD} p-6 sm:p-8`}>
           <p className="font-display text-2xl leading-snug text-ink sm:text-3xl">
             {review.checkins === 0
               ? `No check-ins in ${year} yet. Your story starts with the next one.`
-              : `You and ${review.partnerName} shared ${review.checkins} check-ins in ${year}.`}
+              : `You and ${review.partnerName === "Your partner" ? "your partner" : review.partnerName} shared ${review.checkins} check-ins in ${year}.`}
           </p>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             {review.average !== null ? (
               <Tile
                 value={`${review.average.toFixed(1)}/10`}
-                label="Average mood between you"
+                label={
+                  review.mine !== null && review.theirs !== null
+                    ? `Average mood between you (you ${review.mine.toFixed(1)}, ${review.partnerName} ${review.theirs.toFixed(1)})`
+                    : "Average mood between you"
+                }
               />
             ) : null}
             {review.bestMonth ? (

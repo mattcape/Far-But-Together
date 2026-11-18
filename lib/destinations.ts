@@ -75,7 +75,7 @@ export const PLAN_AND_REMEMBER: Destination[] = [
   {
     href: "/year",
     title: "Year in review",
-    description: "Your year together, in numbers.",
+    description: "Your year together, in numbers. Opens each November.",
     icon: Trophy,
   },
   {

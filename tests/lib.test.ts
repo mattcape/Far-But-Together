@@ -160,3 +160,31 @@ describe("streakAtRisk", () => {
     expect(streakAtRisk(["2026-06-07", "2026-06-06"], today)).toBe(0);
   });
 });
+
+
+import { summarizeMoods, yearReviewOpen } from "../lib/yearStats";
+
+describe("year in review", () => {
+  it("opens in November and December only", () => {
+    expect(yearReviewOpen(new Date(2026, 9, 31))).toBe(false);
+    expect(yearReviewOpen(new Date(2026, 10, 1))).toBe(true);
+    expect(yearReviewOpen(new Date(2026, 11, 31))).toBe(true);
+    expect(yearReviewOpen(new Date(2027, 0, 1))).toBe(false);
+  });
+
+  it("counts a day once, however many check-ins were made", () => {
+    const at = (d: string, h: number) => new Date(`${d}T${String(h).padStart(2, "0")}:00:00`).toISOString();
+    const rows = [
+      { user_id: "me", mood: 10, created_at: at("2026-03-01", 9) },
+      { user_id: "me", mood: 10, created_at: at("2026-03-01", 12) },
+      { user_id: "me", mood: 10, created_at: at("2026-03-01", 18) },
+      { user_id: "me", mood: 4, created_at: at("2026-03-02", 9) },
+      { user_id: "them", mood: 6, created_at: at("2026-03-01", 9) },
+    ];
+    const s = summarizeMoods(rows, "me");
+
+    expect(s.mine).toBe(7); // (10 + 4) / 2 days, not (10+10+10+4) / 4
+    expect(s.theirs).toBe(6);
+    expect(s.average).toBeCloseTo((10 + 4 + 6) / 3);
+  });
+});

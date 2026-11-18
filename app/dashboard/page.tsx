@@ -128,7 +128,8 @@ export default function Dashboard() {
   const [partnerZone, setPartnerZone] = useState<string | null>(null);
   const [clock, setClock] = useState(() => Date.now());
   const [streak, setStreak] = useState(0);
-  const [checkedInToday, setCheckedInToday] = useState(false);
+  const [checkinsToday, setCheckinsToday] = useState(0);
+  const checkedInToday = checkinsToday > 0;
 
   const [now, setNow] = useState(() => Date.now());
 
@@ -159,13 +160,14 @@ export default function Dashboard() {
         .select("created_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
-        .limit(400);
+        .limit(1000);
 
       if (mine) {
         const stamps = mine.map((c) => c.created_at as string);
         setStreak(streakFrom(stamps));
-        setCheckedInToday(
-          stamps.some((c) => differenceInCalendarDays(new Date(), new Date(c)) === 0)
+        setCheckinsToday(
+          stamps.filter((c) => differenceInCalendarDays(new Date(), new Date(c)) === 0)
+            .length
         );
       }
 
@@ -431,7 +433,7 @@ export default function Dashboard() {
                   max={format(new Date(), "yyyy-MM-dd")}
                   value={anniversaryInput}
                   onChange={(e) => setAnniversaryInput(e.target.value)}
-                  className="w-full rounded-xl border border-ink/20 bg-white px-4 py-3 text-ink"
+                  className="w-full rounded-xl border border-ink/20 bg-white px-3.5 py-2.5 text-ink sm:px-4 sm:py-3"
                 />
                 <button type="button" onClick={saveAnniversary} className={PRIMARY_BUTTON}>
                   Save
@@ -517,7 +519,9 @@ export default function Dashboard() {
         </p>
         <p className="mt-2 text-ink/80">
           {checkedInToday
-            ? "You've checked in today."
+            ? checkinsToday === 1
+              ? "You've checked in today. You can check in again any time."
+              : `You've checked in ${checkinsToday} times today.`
             : streak > 0
               ? "Check in today to keep it going."
               : "Check in today to start a streak."}
@@ -574,7 +578,7 @@ export default function Dashboard() {
 
       <div className="mt-8 flex flex-wrap gap-3">
         <Link href="/checkins" className={PRIMARY_BUTTON}>
-          Check in today
+          {checkedInToday ? "Check in again" : "Check in today"}
         </Link>
         <Link href="/checkins/view" className={SECONDARY_BUTTON}>
           Check-in feed

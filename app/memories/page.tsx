@@ -258,7 +258,7 @@ export default function MemoriesPage() {
             </label>
             <textarea
               id="memory-body"
-              rows={4}
+              rows={3}
               maxLength={2000}
               className={INPUT}
               value={body}

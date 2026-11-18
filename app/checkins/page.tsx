@@ -41,7 +41,7 @@ export default function CheckinsPage() {
     }
 
     setFailed(false);
-    setMessage("Check-in saved. Your partner can see it now.");
+    setMessage("Check-in saved. Your partner can see it now. You can check in again any time today.");
     setMood(5);
     setThoughts("");
     setGratitude("");
@@ -50,7 +50,7 @@ export default function CheckinsPage() {
   return (
     <PageFrame
       title="Daily check-in"
-      subtitle="Tell your partner how today is going."
+      subtitle="Tell your partner how today is going. Check in as often as you like."
       width="max-w-2xl"
     >
       <form onSubmit={saveCheckin} className={`${CARD} p-6 sm:p-8`}>
@@ -75,7 +75,7 @@ export default function CheckinsPage() {
         </label>
         <textarea
           id="thoughts"
-          rows={4}
+          rows={3}
           value={thoughts}
           onChange={(e) => setThoughts(e.target.value)}
           className={INPUT}
@@ -89,7 +89,7 @@ export default function CheckinsPage() {
         </label>
         <textarea
           id="gratitude"
-          rows={4}
+          rows={3}
           value={gratitude}
           onChange={(e) => setGratitude(e.target.value)}
           className={INPUT}

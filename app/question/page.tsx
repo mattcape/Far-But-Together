@@ -234,7 +234,7 @@ export default function QuestionPage() {
                 </label>
                 <textarea
                   id="answer"
-                  rows={4}
+                  rows={3}
                   maxLength={1000}
                   className={INPUT}
                   value={draft}
