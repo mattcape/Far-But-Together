@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { differenceInCalendarDays, format } from "date-fns";
+import DateWheel from "@/components/DateWheel";
 import PageFrame from "@/components/PageFrame";
 import SharedPageState from "@/components/SharedPageState";
 import { supabase } from "@/lib/supabase";
@@ -404,6 +405,21 @@ export default function DatesPage() {
               ) : null}
             </div>
           </form>
+
+          <div className="mt-6">
+            <DateWheel
+              saved={(ideas ?? [])
+                .filter((i) => !i.done_on)
+                .map((i) => ({ title: i.title, notes: i.notes ?? "" }))}
+              onPlan={(idea) => {
+                setTitle(idea.title);
+                setNotes(idea.notes);
+                document
+                  .getElementById("date-title")
+                  ?.scrollIntoView({ block: "center" });
+              }}
+            />
+          </div>
 
           {ideas !== null && ideas.length > 0 ? (
             <>

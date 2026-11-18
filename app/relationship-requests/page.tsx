@@ -66,6 +66,23 @@ export default function RelationshipRequestsPage() {
 
     if (!user) return;
 
+    // One relationship at a time, for each of you.
+    const { data: existing } = await supabase
+      .from("relationships")
+      .select("id, user_one, user_two")
+      .or(
+        `user_one.eq.${user.id},user_two.eq.${user.id},user_one.eq.${request.sender_id},user_two.eq.${request.sender_id}`
+      )
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      setFailed(true);
+      setMessage(
+        "One of you is still in a relationship. End it first in Settings, then accept."
+      );
+      return;
+    }
+
     const { error } = await supabase.from("relationships").insert({
       user_one: request.sender_id,
       user_two: user.id,

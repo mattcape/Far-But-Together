@@ -72,17 +72,38 @@ export default function RelationshipSettings() {
       await supabase.storage.from("memory-photos").remove(paths);
     }
 
-    await supabase.from("visits").delete().eq("relationship_id", info.id);
+    // The server function ends it and tells us whether it really worked.
+    const { data: ended, error: rpcError } = await supabase.rpc(
+      "end_relationship",
+      { p_id: info.id }
+    );
 
-    const { error: deleteError } = await supabase
-      .from("relationships")
-      .delete()
-      .eq("id", info.id);
+    let failure = "";
+
+    if (rpcError) {
+      // Function not set up yet: fall back to deleting directly, but only
+      // trust it if a row was actually removed.
+      await supabase.from("visits").delete().eq("relationship_id", info.id);
+
+      const { data: removed, error: deleteError } = await supabase
+        .from("relationships")
+        .delete()
+        .eq("id", info.id)
+        .select("id");
+
+      if (deleteError) failure = deleteError.message;
+      else if (!removed || removed.length === 0) {
+        failure =
+          "The database didn't allow this. Run supabase/end-relationship.sql in the Supabase SQL editor, then try again.";
+      }
+    } else if (ended === false) {
+      failure = "This relationship couldn't be ended. Try refreshing the page.";
+    }
 
     setBusy(false);
 
-    if (deleteError) {
-      setError(deleteError.message);
+    if (failure) {
+      setError(failure);
       return;
     }
 
