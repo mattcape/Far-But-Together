@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
       "A shared space for couples who live apart: daily check-ins, visit countdowns, and more.",
     start_url: "/dashboard",
     display: "standalone",
-    background_color: "#eaf1f7",
+    background_color: "#ffffff",
     theme_color: "#bfddf2",
     icons: [
       { src: "/pwa-icon/192", sizes: "192x192", type: "image/png" },

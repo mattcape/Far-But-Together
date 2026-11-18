@@ -39,17 +39,17 @@ export async function GET(
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(180deg, #bfddf2 0%, #eaf0fb 50%, #f9e6df 100%)",
+          background: "#ffffff",
         }}
       >
-        <svg width={heart} height={heart} viewBox="0 0 24 24" fill="#b93f61">
+        <svg width={heart} height={heart} viewBox="0 0 24 24" fill="#ff3d7f">
           <path d="M12 21s-7.5-4.7-9.6-9.2C.8 8.3 2.7 4.5 6.3 4.5c2.1 0 3.8 1.1 5.7 3.3 1.9-2.2 3.6-3.3 5.7-3.3 3.6 0 5.5 3.8 3.9 7.3C19.5 16.3 12 21 12 21z" />
         </svg>
         <div
           style={{
             marginTop: Math.round(width * 0.06),
             fontSize: Math.round(width * 0.07),
-            color: "#2a2850",
+            color: "#ff3d7f",
             letterSpacing: -1,
           }}
         >
