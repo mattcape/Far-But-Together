@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { CARD, FOCUS, SECONDARY_BUTTON } from "@/lib/ui";
 import { getCurrentUser } from "@/lib/auth";
+import { endRelationship } from "@/lib/relationship";
 
 type Info = { id: string | number; partnerName: string };
 
@@ -59,46 +60,7 @@ export default function RelationshipSettings() {
     setBusy(true);
     setError("");
 
-    // Remove the memory photos first, while we can still see which they are.
-    const { data: photos } = await supabase
-      .from("memories")
-      .select("photo_path")
-      .eq("relationship_id", info.id)
-      .not("photo_path", "is", null);
-
-    const paths = (photos ?? []).map((p) => p.photo_path as string);
-
-    if (paths.length > 0) {
-      await supabase.storage.from("memory-photos").remove(paths);
-    }
-
-    // The server function ends it and tells us whether it really worked.
-    const { data: ended, error: rpcError } = await supabase.rpc(
-      "end_relationship",
-      { p_id: info.id }
-    );
-
-    let failure = "";
-
-    if (rpcError) {
-      // Function not set up yet: fall back to deleting directly, but only
-      // trust it if a row was actually removed.
-      await supabase.from("visits").delete().eq("relationship_id", info.id);
-
-      const { data: removed, error: deleteError } = await supabase
-        .from("relationships")
-        .delete()
-        .eq("id", info.id)
-        .select("id");
-
-      if (deleteError) failure = deleteError.message;
-      else if (!removed || removed.length === 0) {
-        failure =
-          "The database didn't allow this. Run supabase/end-relationship.sql in the Supabase SQL editor, then try again.";
-      }
-    } else if (ended === false) {
-      failure = "This relationship couldn't be ended. Try refreshing the page.";
-    }
+    const failure = await endRelationship(info.id);
 
     setBusy(false);
 

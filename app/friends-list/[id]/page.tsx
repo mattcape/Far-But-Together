@@ -11,6 +11,7 @@ import StatusMessage from "@/components/StatusMessage";
 import { supabase } from "@/lib/supabase";
 import { getCurrentUser } from "@/lib/auth";
 import { sendMessage } from "@/lib/messages";
+import { endRelationship } from "@/lib/relationship";
 import { NICKNAME_MAX, loadNicknames, saveNickname } from "@/lib/nicknames";
 import { currentStreak, longestStreak } from "@/lib/streaks";
 import {
@@ -189,6 +190,35 @@ export default function FriendPage() {
       )
     )
       return;
+
+    // If this friend is also your partner, offer to end that too.
+    const { data: rels } = await supabase
+      .from("relationships")
+      .select("id")
+      .or(
+        `and(user_one.eq.${data.userId},user_two.eq.${id}),and(user_one.eq.${id},user_two.eq.${data.userId})`
+      )
+      .limit(1);
+
+    const rel = rels?.[0];
+
+    if (rel) {
+      const name = nickname || data.realName;
+
+      if (
+        window.confirm(
+          `${name} is also your partner. Removing them as a friend doesn't end your relationship.\n\nEnd the relationship too? This permanently deletes your shared visits, dates, memories and bucket list for both of you.\n\nOK = end it and remove them. Cancel = remove them as a friend only.`
+        )
+      ) {
+        const failure = await endRelationship(rel.id);
+
+        if (failure) {
+          setFailed(true);
+          setMessage(failure);
+          return;
+        }
+      }
+    }
 
     const { error } = await supabase
       .from("friendships")

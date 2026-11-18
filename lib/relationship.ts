@@ -247,3 +247,49 @@ export function isMissingSetup(
     /could not find the function/i.test(error.message ?? "")
   );
 }
+
+
+// Ends a relationship for both people: removes the memory photos, then the
+// relationship and its shared visits. Returns an error message, or "" when
+// it really worked.
+export async function endRelationship(id: string | number): Promise<string> {
+  const { data: photos } = await supabase
+    .from("memories")
+    .select("photo_path")
+    .eq("relationship_id", id)
+    .not("photo_path", "is", null);
+
+  const paths = (photos ?? []).map((p) => p.photo_path as string);
+
+  if (paths.length > 0) {
+    await supabase.storage.from("memory-photos").remove(paths);
+  }
+
+  const { data: ended, error: rpcError } = await supabase.rpc(
+    "end_relationship",
+    { p_id: id }
+  );
+
+  if (!rpcError) {
+    return ended === false
+      ? "This relationship couldn't be ended. Try refreshing the page."
+      : "";
+  }
+
+  // Function not set up: delete directly, but only trust a real removal.
+  await supabase.from("visits").delete().eq("relationship_id", id);
+
+  const { data: removed, error: deleteError } = await supabase
+    .from("relationships")
+    .delete()
+    .eq("id", id)
+    .select("id");
+
+  if (deleteError) return deleteError.message;
+
+  if (!removed || removed.length === 0) {
+    return "The database didn't allow this. Run supabase/end-relationship.sql in the Supabase SQL editor, then try again.";
+  }
+
+  return "";
+}
