@@ -29,7 +29,7 @@ export default function ToolLinks() {
       {GROUPS.map((group) => (
         <div key={group.title} className="mt-5">
           <h3 className="font-semibold text-ink/75">{group.title}</h3>
-          <ul className="mt-2 flex flex-wrap gap-2">
+          <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {group.items.map((d) => {
               const Icon = d.icon;
 
@@ -38,12 +38,14 @@ export default function ToolLinks() {
                   <Link
                     href={d.href}
                     title={d.description}
-                    className={`flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 font-semibold text-ink ring-1 ring-ink/10 hover:bg-white ${FOCUS}`}
+                    className={`flex h-full flex-col items-start gap-2 rounded-2xl bg-white/80 p-4 font-semibold text-ink ring-1 ring-ink/10 hover:bg-white ${FOCUS}`}
                   >
-                    <Icon
-                      className="h-4 w-4 text-rose-deep"
-                      aria-hidden="true"
-                    />
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blush">
+                      <Icon
+                        className="h-5 w-5 text-rose-deep"
+                        aria-hidden="true"
+                      />
+                    </span>
                     {d.title}
                   </Link>
                 </li>

@@ -5,7 +5,7 @@
   --mist: #eaf1f7;
   --blush: #f9e6df;
   --ink: #2a2850;
-  --rose-deep: #b93f61;
+  --rose-deep: #cc2864;
   --lantern: #f3b55c;
 
   --background: var(--mist);
@@ -55,9 +55,9 @@
     --sky-gradient: linear-gradient(180deg, #131937 0%, #1a1f42 42%, #2b1e36 100%);
   }
 }
-:root[data-theme="dark"] .bg-rose-deep { background-color: #b93f61; color: #fff; }
+:root[data-theme="dark"] .bg-rose-deep { background-color: #cc2864; color: #fff; }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .bg-rose-deep { background-color: #b93f61; color: #fff; }
+  :root:not([data-theme="light"]) .bg-rose-deep { background-color: #cc2864; color: #fff; }
 }
 /* The opening clouds stay white in every theme. */
 .intro-overlay { --color-white: #ffffff; }

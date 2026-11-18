@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { nextMilestone, todaysMilestones } from "@/lib/milestones";
 import { CARD, FOCUS } from "@/lib/ui";
 
-const COLORS = ["#b93f61", "#f3b55c", "#8fc1e6", "#f08fae", "#ffffff"];
+const COLORS = ["#ff3d7f", "#cc2864", "#f3b55c", "#8fc1e6", "#f08fae", "#ffffff"];
 const PIECES = 40;
 
 // Falling confetti. Positions come from the index so every render matches.

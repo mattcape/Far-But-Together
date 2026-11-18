@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { differenceInCalendarDays, format } from "date-fns";
 import Link from "next/link";
+import { CalendarHeart, Heart, PenLine, ScrollText } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import PageFrame from "@/components/PageFrame";
 import Nudges from "@/components/Nudges";
@@ -18,7 +19,7 @@ import {
   ensureTeamMessage,
   sendMessage,
 } from "@/lib/messages";
-import { CARD, FOCUS, PRIMARY_BUTTON, SECONDARY_BUTTON } from "@/lib/ui";
+import { CARD, FOCUS, PRIMARY_BUTTON } from "@/lib/ui";
 import { getCurrentUser } from "@/lib/auth";
 import { loadNicknames, nameFor } from "@/lib/nicknames";
 
@@ -469,12 +470,11 @@ export default function Dashboard() {
       }
       width="max-w-4xl"
     >
+      <div className="flex flex-col gap-6 [&>*]:m-0!">
       {!anniversary ? togetherSection : null}
-
       {anniversary ? (
         <MilestoneBanner since={anniversary} partnerName={significantOther} />
       ) : null}
-
       {unread !== null && unread > 0 ? (
         <Link
           href="/mailbox"
@@ -486,48 +486,6 @@ export default function Dashboard() {
           <span className="font-semibold text-rose-deep">Open mailbox</span>
         </Link>
       ) : null}
-
-      <SundayRecap />
-
-      <Nudges
-        relationshipId={relationshipId}
-        checkedInToday={checkedInToday}
-        visitDate={visitDate}
-      />
-
-      <section className={`${CARD} p-6 sm:p-8`}>
-        <h2 className="font-display text-2xl text-ink">Next visit</h2>
-        <p className="mt-3 font-display text-3xl leading-snug text-rose-deep sm:text-4xl">
-          {countdown}
-        </p>
-        {!visitDate ? (
-          <p className="mt-3 text-ink/80">
-            <Link href="/visits" className={link}>
-              Set your next visit date
-            </Link>{" "}
-            to start counting down.
-          </p>
-        ) : null}
-      </section>
-
-      {anniversary ? togetherSection : null}
-
-      <section className={`${CARD} mt-6 p-6 sm:p-8`}>
-        <h2 className="font-display text-2xl text-ink">Your check-in streak</h2>
-        <p className="mt-3 font-display text-3xl text-rose-deep sm:text-4xl">
-          {streak === 1 ? "1 day" : `${streak} days`}
-        </p>
-        <p className="mt-2 text-ink/80">
-          {checkedInToday
-            ? checkinsToday === 1
-              ? "You've checked in today. You can check in again any time."
-              : `You've checked in ${checkinsToday} times today.`
-            : streak > 0
-              ? "Check in today to keep it going."
-              : "Check in today to start a streak."}
-        </p>
-      </section>
-
       <section className={`${CARD} mt-6 p-6 sm:p-8`}>
         <h2 className="font-display text-2xl text-ink">
           {significantOther === "None"
@@ -563,7 +521,42 @@ export default function Dashboard() {
           </p>
         )}
       </section>
-
+      <section className={`${CARD} p-6 sm:p-8`}>
+        <h2 className="font-display text-2xl text-ink">Next visit</h2>
+        <p className="mt-3 font-display text-3xl leading-snug text-rose-deep sm:text-4xl">
+          {countdown}
+        </p>
+        {!visitDate ? (
+          <p className="mt-3 text-ink/80">
+            <Link href="/visits" className={link}>
+              Set your next visit date
+            </Link>{" "}
+            to start counting down.
+          </p>
+        ) : null}
+      </section>
+      <Nudges
+        relationshipId={relationshipId}
+        checkedInToday={checkedInToday}
+        visitDate={visitDate}
+      />
+      <SundayRecap />
+      {anniversary ? togetherSection : null}
+      <section className={`${CARD} mt-6 p-6 sm:p-8`}>
+        <h2 className="font-display text-2xl text-ink">Your check-in streak</h2>
+        <p className="mt-3 font-display text-3xl text-rose-deep sm:text-4xl">
+          {streak === 1 ? "1 day" : `${streak} days`}
+        </p>
+        <p className="mt-2 text-ink/80">
+          {checkedInToday
+            ? checkinsToday === 1
+              ? "You've checked in today. You can check in again any time."
+              : `You've checked in ${checkinsToday} times today.`
+            : streak > 0
+              ? "Check in today to keep it going."
+              : "Check in today to start a streak."}
+        </p>
+      </section>
       {moods &&
       moods.mine.points.length + (moods.theirs?.points.length ?? 0) >= 2 ? (
         <section className={`${CARD} mt-6 p-6 sm:p-8`}>
@@ -575,36 +568,51 @@ export default function Dashboard() {
           </div>
         </section>
       ) : null}
-
-      <div className="mt-8 flex flex-wrap gap-3">
-        <Link href="/checkins" className={PRIMARY_BUTTON}>
-          {checkedInToday ? "Check in again" : "Check in today"}
-        </Link>
-        <Link href="/checkins/view" className={SECONDARY_BUTTON}>
-          Check-in feed
-        </Link>
-        <Link href="/visits" className={SECONDARY_BUTTON}>
-          Change visit date
-        </Link>
-        {partnerId && unread !== null ? (
-          <button
-            type="button"
-            onClick={thinkingOfYou}
-            disabled={nudgeBusy}
-            className={SECONDARY_BUTTON}
+      <section aria-label="Quick actions">
+        <div className="grid grid-cols-2 gap-3">
+          <Link
+            href="/checkins"
+            className={`flex flex-col items-start gap-2 rounded-2xl bg-rose-deep p-4 font-semibold text-white hover:brightness-110 ${FOCUS}`}
           >
-            {nudgeBusy ? "Sending..." : "Thinking of you"}
-          </button>
-        ) : null}
-      </div>
+            <PenLine className="h-6 w-6" aria-hidden="true" />
+            {checkedInToday ? "Check in again" : "Check in today"}
+          </Link>
+          <Link
+            href="/checkins/view"
+            className={`${CARD} flex flex-col items-start gap-2 p-4 font-semibold text-ink hover:bg-white ${FOCUS}`}
+          >
+            <ScrollText className="h-6 w-6 text-rose-deep" aria-hidden="true" />
+            Check-in feed
+          </Link>
+          <Link
+            href="/visits"
+            className={`${CARD} flex flex-col items-start gap-2 p-4 font-semibold text-ink hover:bg-white ${FOCUS}`}
+          >
+            <CalendarHeart className="h-6 w-6 text-rose-deep" aria-hidden="true" />
+            Change visit date
+          </Link>
+          {partnerId && unread !== null ? (
+            <button
+              type="button"
+              onClick={thinkingOfYou}
+              disabled={nudgeBusy}
+              className={`${CARD} flex flex-col items-start gap-2 p-4 text-left font-semibold text-ink hover:bg-white disabled:opacity-60 ${FOCUS}`}
+            >
+              <Heart className="h-6 w-6 text-rose-deep" aria-hidden="true" />
+              {nudgeBusy ? "Sending..." : "Thinking of you"}
+            </button>
+          ) : null}
+        </div>
 
-      {nudge ? (
-        <p role="status" className="mt-4 font-semibold text-ink">
-          {nudge}
-        </p>
-      ) : null}
+        {nudge ? (
+          <p role="status" className="mt-4 font-semibold text-ink">
+            {nudge}
+          </p>
+        ) : null}
+      </section>
 
       <ToolLinks />
+      </div>
     </PageFrame>
     </div>
   );

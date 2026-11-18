@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Heart } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { countUnread, ensureTeamMessage } from "@/lib/messages";
 import { notificationsOn } from "@/components/AppearanceSettings";
@@ -104,8 +105,12 @@ export default function NavBar() {
     >
       <Link
         href="/"
-        className={`whitespace-nowrap py-2 font-display text-lg text-ink sm:text-xl ${FOCUS}`}
+        className={`flex items-center gap-2 whitespace-nowrap py-2 font-display text-lg text-ink sm:text-xl ${FOCUS}`}
       >
+        <Heart
+          className="h-5 w-5 fill-[#ff3d7f] text-[#ff3d7f]"
+          aria-hidden="true"
+        />
         Far But Together
       </Link>
 

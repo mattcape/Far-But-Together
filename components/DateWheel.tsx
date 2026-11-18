@@ -38,8 +38,28 @@ function wedge(index: number): string {
   return `M ${C} ${C} L ${x1} ${y1} A ${R} ${R} 0 0 1 ${x2} ${y2} Z`;
 }
 
-function short(title: string): string {
-  return title.length > 17 ? `${title.slice(0, 16).trimEnd()}...` : title;
+// Splits a title over up to three short lines so it fits inside its wedge.
+function lines(title: string): string[] {
+  const max = 14;
+  const out: string[] = [""];
+
+  for (const w of title.split(" ")) {
+    const last = out.length - 1;
+
+    if (!out[last] || `${out[last]} ${w}`.length <= max) {
+      out[last] = out[last] ? `${out[last]} ${w}` : w;
+    } else {
+      out.push(w);
+    }
+  }
+
+  if (out.length > 3) {
+    const rest = out.slice(2).join(" ");
+
+    return [out[0], out[1], rest.length > max ? `${rest.slice(0, max - 1).trimEnd()}…` : rest];
+  }
+
+  return out;
 }
 
 const FILLS = [
@@ -127,7 +147,7 @@ export default function DateWheel({
           {options.map((o, i) => {
             const fill = FILLS[i % FILLS.length];
             const mid = i * step + step / 2;
-            const [tx, ty] = point(mid, R * 0.62);
+            const [tx, ty] = point(mid, R * 0.64);
 
             return (
               <g key={o.title}>
@@ -136,13 +156,20 @@ export default function DateWheel({
                   x={tx}
                   y={ty}
                   fill={fill.fg}
-                  fontSize="11"
+                  fontSize="10"
                   fontWeight="600"
                   textAnchor="middle"
-                  dominantBaseline="middle"
                   transform={`rotate(${mid - 90} ${tx} ${ty})`}
                 >
-                  {short(o.title)}
+                  {lines(o.title).map((line, n, all) => (
+                    <tspan
+                      key={n}
+                      x={tx}
+                      y={ty + (n - (all.length - 1) / 2) * 11.5 + 3.5}
+                    >
+                      {line}
+                    </tspan>
+                  ))}
                 </text>
               </g>
             );
