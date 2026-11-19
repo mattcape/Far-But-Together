@@ -59,6 +59,9 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // Lets the page report the iPhone home-indicator area, so the tab bar can
+  // sit above it.
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#bfddf2" },
     { media: "(prefers-color-scheme: dark)", color: "#131937" },

@@ -35,7 +35,7 @@ export default function TabBar() {
     <>
       <nav
         aria-label="Sections"
-        className="tabbar fixed inset-x-0 bottom-0 z-30 border-t border-ink/10 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
+        className="tabbar fixed inset-x-0 bottom-0 z-30 border-t border-ink/10 bg-white/95 pb-[max(env(safe-area-inset-bottom),0.5rem)] backdrop-blur"
       >
         <ul className="mx-auto grid max-w-2xl grid-cols-5">
           {TABS.map((tab) => {
@@ -47,7 +47,7 @@ export default function TabBar() {
                 <Link
                   href={tab.href}
                   aria-current={active ? "page" : undefined}
-                  className={`flex min-h-[4.25rem] flex-col items-center justify-center gap-1 text-xs font-semibold ${
+                  className={`flex min-h-[3.75rem] flex-col items-center justify-center gap-1 text-xs font-semibold ${
                     active ? "text-rose-deep" : "text-ink/70"
                   } ${FOCUS}`}
                 >
