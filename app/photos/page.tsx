@@ -325,7 +325,7 @@ export default function PhotosPage() {
             </form>
           </section>
 
-          <h2 className="mb-4 mt-12 font-display text-3xl text-ink">
+          <h2 className="mb-3 mt-6 font-display text-2xl sm:mb-4 sm:mt-12 sm:text-3xl text-ink">
             Earlier this month
           </h2>
 

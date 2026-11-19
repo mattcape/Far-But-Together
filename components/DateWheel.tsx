@@ -1,8 +1,9 @@
 "use client";
 
+import Collapse from "@/components/Collapse";
 import { useEffect, useRef, useState } from "react";
 import { DATE_IDEAS, type DateIdea } from "@/lib/dateIdeas";
-import { CARD, FOCUS, PRIMARY_BUTTON } from "@/lib/ui";
+import { FOCUS, PRIMARY_BUTTON } from "@/lib/ui";
 
 const SEGMENTS = 8;
 const SIZE = 300;
@@ -125,8 +126,7 @@ export default function DateWheel({
   const step = 360 / SEGMENTS;
 
   return (
-    <section className={`${CARD} p-6`}>
-      <h2 className="font-display text-2xl text-ink">Date night wheel</h2>
+    <Collapse title="Date night wheel">
       <p className="mt-1 text-ink/75">
         Can&apos;t decide? Spin it. Your saved ideas are on the wheel, plus a
         few of ours.
@@ -229,6 +229,6 @@ export default function DateWheel({
           </div>
         ) : null}
       </div>
-    </section>
+    </Collapse>
   );
 }

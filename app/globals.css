@@ -276,3 +276,16 @@ body {
     display: none;
   }
 }
+
+
+/* Signed-in pages sit between the top bar and the tab bar, so a short page
+   fills exactly one screen instead of always scrolling a little. The legal
+   links move to the You page. */
+body:has(.tabbar) #main {
+  min-height: calc(100dvh - 3.8rem);
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+}
+
+body:has(.tabbar) footer {
+  display: none;
+}

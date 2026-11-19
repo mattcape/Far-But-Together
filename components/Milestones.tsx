@@ -109,7 +109,7 @@ export function NextMilestone({ since }: { since: string }) {
   if (!next) return null;
 
   return (
-    <p className="mt-3 text-ink/80">
+    <p className="mt-1 text-sm text-ink/80 sm:mt-3 sm:text-base">
       Next milestone:{" "}
       <span className="font-semibold text-ink">{next.label}</span>, on{" "}
       {format(next.date, "MMMM d, yyyy")} (

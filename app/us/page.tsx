@@ -109,7 +109,7 @@ export default function UsPage() {
           </Link>
         </div>
       ) : (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3 sm:gap-6">
           <TogetherCard
             relationshipId={state.relationshipId}
             anniversary={state.anniversary}
@@ -120,30 +120,31 @@ export default function UsPage() {
             }
           />
 
-          <section className={`${CARD} p-6 sm:p-8`}>
-            <h2 className="font-display text-2xl text-ink">Your check-in streak</h2>
-            <p className="mt-3 font-display text-3xl text-rose-deep sm:text-4xl">
-              {state.streak === 1 ? "1 day" : `${state.streak} days`}
-            </p>
-            <p className="mt-2 text-ink/80">
-              {state.checkinsToday > 0
-                ? state.checkinsToday === 1
-                  ? "You've checked in today."
-                  : `You've checked in ${state.checkinsToday} times today.`
-                : state.streak > 0
-                  ? "Check in today to keep it going."
-                  : "Check in today to start a streak."}
-            </p>
-          </section>
+          <section className={`${CARD} p-4 sm:p-8`}>
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4">
+              <h2 className="font-display text-xl text-ink sm:text-2xl">
+                Check-in streak:{" "}
+                <span className="text-rose-deep">
+                  {state.streak === 1 ? "1 day" : `${state.streak} days`}
+                </span>
+              </h2>
+              <p className="text-sm text-ink/80">
+                {state.checkinsToday > 0
+                  ? state.checkinsToday === 1
+                    ? "Checked in today"
+                    : `Checked in ${state.checkinsToday} times today`
+                  : state.streak > 0
+                    ? "Check in today to keep it going"
+                    : "Check in today to start one"}
+              </p>
+            </div>
 
-          {state.moods ? (
-            <section className={`${CARD} p-6 sm:p-8`}>
-              <h2 className="font-display text-2xl text-ink">Mood, last 30 days</h2>
-              <div className="mt-4">
+            {state.moods ? (
+              <div className="mt-3">
                 <MoodChart days={MOOD_DAYS} mine={state.moods.mine} theirs={state.moods.theirs} />
               </div>
-            </section>
-          ) : null}
+            ) : null}
+          </section>
         </div>
       )}
     </PageFrame>

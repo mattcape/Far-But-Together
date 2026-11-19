@@ -202,7 +202,7 @@ export default function CommunityPage() {
             </button>
           </form>
 
-          <h2 className="mb-4 mt-12 font-display text-3xl text-ink">Latest</h2>
+          <h2 className="mb-3 mt-6 font-display text-2xl sm:mb-4 sm:mt-12 sm:text-3xl text-ink">Latest</h2>
 
           {posts.length === 0 ? (
             <p className="text-ink/75">Nothing here yet. Write the first post above.</p>

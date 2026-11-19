@@ -19,15 +19,15 @@ type View = "loading" | "no-relationship" | "ready";
 
 function Stat({ person, you }: { person: Person; you: boolean }) {
   return (
-    <div className="rounded-2xl bg-white/70 p-5 ring-1 ring-ink/10">
+    <div className="rounded-2xl bg-white/70 p-3 ring-1 ring-ink/10 sm:p-5">
       <div className="font-semibold text-ink/75">
         {you ? "You" : person.name}
       </div>
-      <div className="mt-1 font-display text-3xl text-rose-deep">
+      <div className="mt-1 font-display text-2xl text-rose-deep sm:text-3xl">
         {person.average === null ? "-" : `${person.average.toFixed(1)}/10`}
       </div>
       <div className="text-ink/80">{moodWord(person.average)}</div>
-      <div className="mt-3 text-sm text-ink/75">
+      <div className="mt-2 text-xs text-ink/75 sm:mt-3 sm:text-sm">
         {person.checkins === 0
           ? "No check-ins this week"
           : `${person.checkins} check-in${person.checkins === 1 ? "" : "s"} on ${
@@ -85,18 +85,18 @@ export default function RecapPage() {
         <SharedPageState kind={view === "ready" ? "loading" : view} />
       ) : (
         <>
-          <section className={`${CARD} p-6 sm:p-8`}>
-            <p className="font-display text-2xl leading-snug text-ink sm:text-3xl">
+          <section className={`${CARD} p-4 sm:p-8`}>
+            <p className="font-display text-xl leading-snug text-ink sm:text-3xl">
               {headline(recap)}
             </p>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-6 sm:gap-4">
               <Stat person={recap.me} you />
               <Stat person={recap.partner} you={false} />
             </div>
 
             {recap.partner.gratitude ? (
-              <figure className="mt-6 rounded-2xl bg-blush/60 p-5">
+              <figure className="mt-3 rounded-2xl bg-blush/60 p-3 sm:mt-6 sm:p-5">
                 <figcaption className="font-semibold text-ink">
                   What {recap.partner.name} was grateful for
                 </figcaption>
@@ -107,9 +107,9 @@ export default function RecapPage() {
             ) : null}
           </section>
 
-          <section className={`${CARD} mt-6 p-6 sm:p-8`}>
-            <h2 className="font-display text-2xl text-ink">Coming up</h2>
-            <ul className="mt-3 space-y-2 text-lg text-ink/85">
+          <section className={`${CARD} mt-3 p-4 sm:mt-6 sm:p-8`}>
+            <h2 className="font-display text-xl text-ink sm:text-2xl">Coming up</h2>
+            <ul className="mt-2 space-y-1 text-base text-ink/85 sm:mt-3 sm:space-y-2 sm:text-lg">
               <li>
                 {recap.home.daysToNextVisit === null ? (
                   <Link
@@ -146,7 +146,7 @@ export default function RecapPage() {
               </li>
             </ul>
 
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-4 flex flex-wrap gap-3">
               <Link href="/checkins" className={PRIMARY_BUTTON}>
                 Check in today
               </Link>

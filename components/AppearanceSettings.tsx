@@ -1,7 +1,8 @@
 "use client";
 
+import Collapse from "@/components/Collapse";
 import { useSyncExternalStore } from "react";
-import { CARD, FOCUS } from "@/lib/ui";
+import { FOCUS } from "@/lib/ui";
 
 type Theme = "system" | "light" | "dark";
 
@@ -93,8 +94,7 @@ export default function AppearanceSettings() {
 
   return (
     <>
-      <section className={`${CARD} p-6`}>
-        <h2 className="font-display text-2xl text-ink">Appearance</h2>
+      <Collapse title="Appearance">
 
         <fieldset className="mt-3">
           <legend className="sr-only">Theme</legend>
@@ -121,10 +121,9 @@ export default function AppearanceSettings() {
             ))}
           </div>
         </fieldset>
-      </section>
+      </Collapse>
 
-      <section className={`${CARD} p-6`}>
-        <h2 className="font-display text-2xl text-ink">Notifications</h2>
+      <Collapse title="Notifications">
 
         {notify === "unsupported" ? (
           <p className="mt-2 text-ink/75">
@@ -161,7 +160,7 @@ export default function AppearanceSettings() {
             )}
           </>
         )}
-      </section>
+      </Collapse>
     </>
   );
 }

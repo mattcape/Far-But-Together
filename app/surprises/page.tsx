@@ -256,7 +256,7 @@ export default function SurprisesPage() {
             </button>
           </form>
 
-          <h2 className="mb-4 mt-12 font-display text-3xl text-ink">For you</h2>
+          <h2 className="mb-3 mt-6 font-display text-2xl sm:mb-4 sm:mt-12 sm:text-3xl text-ink">For you</h2>
 
           {forMe.length === 0 ? (
             <p className="text-ink/75">
@@ -292,7 +292,7 @@ export default function SurprisesPage() {
             </ul>
           )}
 
-          <h2 className="mb-4 mt-12 font-display text-3xl text-ink">
+          <h2 className="mb-3 mt-6 font-display text-2xl sm:mb-4 sm:mt-12 sm:text-3xl text-ink">
             Scheduled by you
           </h2>
 

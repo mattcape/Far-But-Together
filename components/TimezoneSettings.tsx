@@ -1,8 +1,9 @@
 "use client";
 
+import Collapse from "@/components/Collapse";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { CARD, INPUT, PRIMARY_BUTTON } from "@/lib/ui";
+import { INPUT, PRIMARY_BUTTON } from "@/lib/ui";
 import { getCurrentUser } from "@/lib/auth";
 
 function allZones(): string[] {
@@ -74,8 +75,7 @@ export default function TimezoneSettings() {
   if (zones.length === 0) return null;
 
   return (
-    <section className={`${CARD} p-6`}>
-      <h2 className="font-display text-2xl text-ink">Time zone</h2>
+    <Collapse title="Time zone">
       <p className="mt-2 text-ink/75">
         Your partner sees your local time on their dashboard.
       </p>
@@ -108,6 +108,6 @@ export default function TimezoneSettings() {
           {message}
         </p>
       ) : null}
-    </section>
+    </Collapse>
   );
 }

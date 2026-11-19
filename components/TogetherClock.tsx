@@ -73,24 +73,24 @@ export default function TogetherClock({
 
       <div
         aria-hidden="true"
-        className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-6"
+        className="mt-3 grid grid-cols-6 gap-1.5 sm:gap-3"
       >
         {parts.map((p) => (
           <div
             key={p.unit}
-            className="rounded-2xl bg-blush px-2 py-3 text-center"
+            className="rounded-xl bg-blush px-0.5 py-2 text-center sm:rounded-2xl sm:px-2 sm:py-3"
           >
-            <div className="font-display text-3xl tabular-nums text-rose-deep sm:text-4xl">
+            <div className="font-display text-2xl tabular-nums text-rose-deep sm:text-4xl">
               {p.n}
             </div>
-            <div className="text-sm text-ink/80">
+            <div className="text-[11px] text-ink/80 sm:text-sm">
               {p.n === 1 ? p.unit : `${p.unit}s`}
             </div>
           </div>
         ))}
       </div>
 
-      <p className="mt-4 text-sm leading-relaxed text-ink/80">
+      <p className="mt-4 hidden text-sm leading-relaxed text-ink/80 sm:block">
         That&apos;s{" "}
         <span className="font-semibold text-ink">
           {plural(differenceInMonths(end, start), "month")}

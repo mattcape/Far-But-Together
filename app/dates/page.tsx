@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { differenceInCalendarDays, format } from "date-fns";
 import DateWheel from "@/components/DateWheel";
+import Collapse from "@/components/Collapse";
 import PageFrame from "@/components/PageFrame";
 import SharedPageState from "@/components/SharedPageState";
 import { supabase } from "@/lib/supabase";
@@ -406,130 +407,7 @@ export default function DatesPage() {
             </div>
           </form>
 
-          <div className="mt-6">
-            <DateWheel
-              saved={(ideas ?? [])
-                .filter((i) => !i.done_on)
-                .map((i) => ({ title: i.title, notes: i.notes ?? "" }))}
-              onPlan={(idea) => {
-                setTitle(idea.title);
-                setNotes(idea.notes);
-                document
-                  .getElementById("date-title")
-                  ?.scrollIntoView({ block: "center" });
-              }}
-            />
-          </div>
-
-          {ideas !== null && ideas.length > 0 ? (
-            <>
-              <div className="mb-4 mt-12 flex flex-wrap items-center justify-between gap-3">
-                <h2 className="font-display text-3xl text-ink">Saved ideas</h2>
-                {ideas.some((i) => !i.done_on) ? (
-                  <button
-                    type="button"
-                    onClick={pickOne}
-                    className={`rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink ring-1 ring-ink/15 hover:bg-blush ${FOCUS}`}
-                  >
-                    Pick one for us
-                  </button>
-                ) : null}
-              </div>
-
-              {pick ? (
-                <div
-                  role="status"
-                  className={`${CARD} mb-4 bg-blush/70 p-5 ring-1 ring-rose-deep/30`}
-                >
-                  <div className="text-sm font-semibold text-ink/75">
-                    How about this one?
-                  </div>
-                  <div className="mt-1 font-display text-2xl text-ink">
-                    {pick.title}
-                  </div>
-                  {pick.notes ? (
-                    <p className="mt-1 text-ink/80">{pick.notes}</p>
-                  ) : null}
-                  <div className="mt-3 flex flex-wrap gap-2 text-sm font-semibold">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        planIdea(pick);
-                        setPick(null);
-                      }}
-                      className={`rounded-full bg-rose-deep px-4 py-2 text-white hover:brightness-110 ${FOCUS}`}
-                    >
-                      Plan it
-                    </button>
-                    {ideas.filter((i) => !i.done_on).length > 1 ? (
-                      <button
-                        type="button"
-                        onClick={pickOne}
-                        className={`rounded-full px-4 py-2 text-ink hover:bg-white ${FOCUS}`}
-                      >
-                        Pick another
-                      </button>
-                    ) : null}
-                    <button
-                      type="button"
-                      onClick={() => setPick(null)}
-                      className={`rounded-full px-4 py-2 text-ink/75 hover:bg-white ${FOCUS}`}
-                    >
-                      Close
-                    </button>
-                  </div>
-                </div>
-              ) : null}
-              <ul className="space-y-3">
-                {ideas.map((idea) => (
-                  <li
-                    key={idea.id}
-                    className={`${CARD} flex flex-wrap items-center justify-between gap-3 p-4 ${
-                      idea.done_on ? "opacity-70" : ""
-                    }`}
-                  >
-                    <div className="min-w-0">
-                      <div className="font-semibold text-ink">{idea.title}</div>
-                      {idea.done_on ? (
-                        <div className="text-sm text-ink/70">
-                          Done on{" "}
-                          {format(parseDay(idea.done_on), "MMM d, yyyy")}
-                        </div>
-                      ) : null}
-                    </div>
-                    <div className="flex gap-1 text-sm font-semibold">
-                      {!idea.done_on ? (
-                        <button
-                          type="button"
-                          onClick={() => planIdea(idea)}
-                          className={`rounded-full px-3 py-2 text-ink hover:bg-white ${FOCUS}`}
-                        >
-                          Plan it
-                        </button>
-                      ) : null}
-                      <button
-                        type="button"
-                        onClick={() => toggleDone(idea)}
-                        className={`rounded-full px-3 py-2 text-ink/75 hover:bg-white ${FOCUS}`}
-                      >
-                        {idea.done_on ? "Not done" : "Mark done"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteIdea(idea)}
-                        aria-label={`Delete ${idea.title}`}
-                        className={`rounded-full px-3 py-2 text-ink/75 hover:bg-white hover:text-rose-deep ${FOCUS}`}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </>
-          ) : null}
-
-          <h2 className="mb-4 mt-12 font-display text-3xl text-ink">
+          <h2 className="mb-3 mt-6 font-display text-2xl text-ink sm:mb-4 sm:mt-12 sm:text-3xl">
             Coming up
           </h2>
 
@@ -552,7 +430,7 @@ export default function DatesPage() {
 
           {past.length > 0 ? (
             <>
-              <h2 className="mb-4 mt-12 font-display text-3xl text-ink">
+              <h2 className="mb-3 mt-6 font-display text-2xl text-ink sm:mb-4 sm:mt-12 sm:text-3xl">
                 Past
               </h2>
               <ul className="space-y-4">
@@ -567,6 +445,131 @@ export default function DatesPage() {
                 ))}
               </ul>
             </>
+          ) : null}
+          <div className="mt-3">
+            <DateWheel
+              saved={(ideas ?? [])
+                .filter((i) => !i.done_on)
+                .map((i) => ({ title: i.title, notes: i.notes ?? "" }))}
+              onPlan={(idea) => {
+                setTitle(idea.title);
+                setNotes(idea.notes);
+                document
+                  .getElementById("date-title")
+                  ?.scrollIntoView({ block: "center" });
+              }}
+            />
+          </div>
+
+          {ideas !== null && ideas.length > 0 ? (
+            <div className="mt-3">
+              <Collapse title={`Saved ideas (${ideas.length})`}>
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  {ideas.some((i) => !i.done_on) ? (
+                    <button
+                      type="button"
+                      onClick={pickOne}
+                      className={`rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink ring-1 ring-ink/15 hover:bg-blush ${FOCUS}`}
+                    >
+                      Pick one for us
+                    </button>
+                  ) : null}
+                </div>
+
+                {pick ? (
+                  <div
+                    role="status"
+                    className={`${CARD} mb-4 bg-blush/70 p-5 ring-1 ring-rose-deep/30`}
+                  >
+                    <div className="text-sm font-semibold text-ink/75">
+                      How about this one?
+                    </div>
+                    <div className="mt-1 font-display text-2xl text-ink">
+                      {pick.title}
+                    </div>
+                    {pick.notes ? (
+                      <p className="mt-1 text-ink/80">{pick.notes}</p>
+                    ) : null}
+                    <div className="mt-3 flex flex-wrap gap-2 text-sm font-semibold">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          planIdea(pick);
+                          setPick(null);
+                        }}
+                        className={`rounded-full bg-rose-deep px-4 py-2 text-white hover:brightness-110 ${FOCUS}`}
+                      >
+                        Plan it
+                      </button>
+                      {ideas.filter((i) => !i.done_on).length > 1 ? (
+                        <button
+                          type="button"
+                          onClick={pickOne}
+                          className={`rounded-full px-4 py-2 text-ink hover:bg-white ${FOCUS}`}
+                        >
+                          Pick another
+                        </button>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => setPick(null)}
+                        className={`rounded-full px-4 py-2 text-ink/75 hover:bg-white ${FOCUS}`}
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+                <ul className="space-y-3">
+                  {ideas.map((idea) => (
+                    <li
+                      key={idea.id}
+                      className={`${CARD} flex flex-wrap items-center justify-between gap-3 p-4 ${
+                        idea.done_on ? "opacity-70" : ""
+                      }`}
+                    >
+                      <div className="min-w-0">
+                        <div className="font-semibold text-ink">
+                          {idea.title}
+                        </div>
+                        {idea.done_on ? (
+                          <div className="text-sm text-ink/70">
+                            Done on{" "}
+                            {format(parseDay(idea.done_on), "MMM d, yyyy")}
+                          </div>
+                        ) : null}
+                      </div>
+                      <div className="flex gap-1 text-sm font-semibold">
+                        {!idea.done_on ? (
+                          <button
+                            type="button"
+                            onClick={() => planIdea(idea)}
+                            className={`rounded-full px-3 py-2 text-ink hover:bg-white ${FOCUS}`}
+                          >
+                            Plan it
+                          </button>
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={() => toggleDone(idea)}
+                          className={`rounded-full px-3 py-2 text-ink/75 hover:bg-white ${FOCUS}`}
+                        >
+                          {idea.done_on ? "Not done" : "Mark done"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteIdea(idea)}
+                          aria-label={`Delete ${idea.title}`}
+                          className={`rounded-full px-3 py-2 text-ink/75 hover:bg-white hover:text-rose-deep ${FOCUS}`}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </Collapse>
+            </div>
           ) : null}
         </>
       )}

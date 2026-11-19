@@ -79,7 +79,7 @@ export default function TogetherCard({
   return (
     <section
       id="together"
-      className={`${CARD} p-6 sm:p-8 ${anniversary ? "" : "ring-2 ring-rose-deep/30"}`}
+      className={`${CARD} p-4 sm:p-8 ${anniversary ? "" : "ring-2 ring-rose-deep/30"}`}
     >
       <h2 className="font-display text-2xl text-ink">
         {anniversary ? "Together" : "When did you two get together?"}
@@ -93,7 +93,7 @@ export default function TogetherCard({
       {anniversary && !editing ? (
         <>
           <TogetherClock since={anniversary} />
-          <p className="mt-4 text-ink/80">
+          <p className="mt-2 text-ink/80 sm:mt-4">
             since {format(parseVisitDate(anniversary), "MMMM d, yyyy")}
           </p>
           <NextMilestone since={anniversary} />
@@ -103,7 +103,7 @@ export default function TogetherCard({
               setInput(anniversary);
               setEditing(true);
             }}
-            className={`mt-2 text-sm ${link}`}
+            className={`mt-1 text-sm ${link}`}
           >
             Change date
           </button>
@@ -135,7 +135,7 @@ export default function TogetherCard({
       )}
 
       {partnerTime ? (
-        <p className="mt-5 text-ink/85">
+        <p className="mt-2 text-ink/85 sm:mt-5">
           It&apos;s <span className="font-semibold text-ink">{partnerTime}</span>{" "}
           for {partnerName}.
         </p>

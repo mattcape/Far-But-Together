@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
+import Collapse from "@/components/Collapse";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { CARD, FOCUS, SECONDARY_BUTTON } from "@/lib/ui";
+import { FOCUS, SECONDARY_BUTTON } from "@/lib/ui";
 import { getCurrentUser } from "@/lib/auth";
 import { endRelationship } from "@/lib/relationship";
 
@@ -75,8 +77,7 @@ export default function RelationshipSettings() {
   if (!info) return null;
 
   return (
-    <section className={`${CARD} p-6`}>
-      <h2 className="font-display text-2xl text-ink">Relationship</h2>
+    <Collapse title="Relationship">
       <p className="mt-2 text-ink/75">
         You&apos;re connected with{" "}
         <span className="font-semibold text-ink">{info.partnerName}</span>.
@@ -127,6 +128,15 @@ export default function RelationshipSettings() {
           ) : null}
         </div>
       )}
-    </section>
+    <p className="mt-4 text-ink/85">
+        Got a request to be someone&apos;s partner?{" "}
+        <Link
+          href="/relationship-requests"
+          className="font-semibold text-ink underline decoration-rose-deep decoration-2 underline-offset-4"
+        >
+          See relationship requests
+        </Link>
+      </p>
+    </Collapse>
   );
 }

@@ -75,8 +75,8 @@ async function countIn(
 
 function Tile({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-2xl bg-white/70 p-5 ring-1 ring-ink/10">
-      <div className="font-display text-4xl text-rose-deep">{value}</div>
+    <div className="rounded-2xl bg-white/70 p-3 ring-1 ring-ink/10 sm:p-5">
+      <div className="font-display text-2xl text-rose-deep sm:text-4xl">{value}</div>
       <div className="mt-1 text-ink/80">{label}</div>
     </div>
   );
@@ -188,8 +188,8 @@ export default function YearPage() {
       </div>
 
       {locked ? (
-        <section className={`${CARD} p-6 sm:p-8`}>
-          <p className="font-display text-2xl leading-snug text-ink sm:text-3xl">
+        <section className={`${CARD} p-4 sm:p-8`}>
+          <p className="font-display text-xl leading-snug text-ink sm:text-3xl">
             Your {thisYear} in review opens November 1.
           </p>
           <p className="mt-3 text-ink/80">
@@ -210,14 +210,14 @@ export default function YearPage() {
       ) : view !== "ready" || !review ? (
         <SharedPageState kind={view === "ready" ? "loading" : view} />
       ) : (
-        <section className={`${CARD} p-6 sm:p-8`}>
-          <p className="font-display text-2xl leading-snug text-ink sm:text-3xl">
+        <section className={`${CARD} p-4 sm:p-8`}>
+          <p className="font-display text-xl leading-snug text-ink sm:text-3xl">
             {review.checkins === 0
               ? `No check-ins in ${year} yet. Your story starts with the next one.`
               : `You and ${review.partnerName === "Your partner" ? "your partner" : review.partnerName} shared ${review.checkins} check-ins in ${year}.`}
           </p>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-6 sm:gap-4">
             {review.average !== null ? (
               <Tile
                 value={`${review.average.toFixed(1)}/10`}

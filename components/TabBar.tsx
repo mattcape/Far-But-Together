@@ -33,12 +33,9 @@ export default function TabBar() {
 
   return (
     <>
-      {/* Keeps the end of every page clear of the bar. */}
-      <div aria-hidden="true" className="h-[calc(4.25rem+env(safe-area-inset-bottom))]" />
-
       <nav
         aria-label="Sections"
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-ink/10 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
+        className="tabbar fixed inset-x-0 bottom-0 z-30 border-t border-ink/10 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
       >
         <ul className="mx-auto grid max-w-2xl grid-cols-5">
           {TABS.map((tab) => {

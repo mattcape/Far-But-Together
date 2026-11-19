@@ -1,8 +1,9 @@
 "use client";
 
+import Collapse from "@/components/Collapse";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { CARD, FOCUS, SECONDARY_BUTTON } from "@/lib/ui";
+import { FOCUS, SECONDARY_BUTTON } from "@/lib/ui";
 import { getCurrentUser } from "@/lib/auth";
 
 // Permanently deletes your account and everything in it.
@@ -67,8 +68,7 @@ export default function DeleteAccount() {
   }
 
   return (
-    <section className={`${CARD} p-6`}>
-      <h2 className="font-display text-2xl text-ink">Delete my account</h2>
+    <Collapse title="Delete my account">
       <p className="mt-2 leading-relaxed text-ink/75">
         Permanently deletes your account, check-ins, messages, letters and
         community posts. If you&apos;re in a relationship, the shared visits,
@@ -127,6 +127,6 @@ export default function DeleteAccount() {
           ) : null}
         </div>
       )}
-    </section>
+    </Collapse>
   );
 }

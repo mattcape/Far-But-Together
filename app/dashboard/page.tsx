@@ -243,8 +243,9 @@ export default function Dashboard() {
             : `Together with ${significantOther}`
         }
         width="max-w-4xl"
+        mobileSubtitle
       >
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3 sm:gap-6">
           {relationshipId !== null && !anniversary ? (
             <TogetherCard
               relationshipId={relationshipId}
@@ -266,33 +267,25 @@ export default function Dashboard() {
             unread={unread}
           />
 
-          <section className={`${CARD} p-6 sm:p-8`}>
-            <h2 className="font-display text-2xl text-ink">
+          <section className={`${CARD} p-4 sm:p-8`}>
+            <h2 className="font-display text-xl text-ink sm:text-2xl">
               {partnerLabel}&apos;s latest check-in
             </h2>
 
             {latestCheckin ? (
               <>
-                <p className="mt-4 text-lg font-semibold text-rose-deep">
+                <p className="mt-2 font-semibold text-rose-deep">
                   Mood: {latestCheckin.mood}/10
                 </p>
-
-                <p className="mt-4 font-semibold text-ink">
-                  How are you feeling today?
-                </p>
-                <p className="whitespace-pre-wrap text-ink/85">
+                <p className="mt-1 line-clamp-3 whitespace-pre-wrap text-ink/85">
                   {latestCheckin.thoughts}
                 </p>
-
-                <p className="mt-4 font-semibold text-ink">
-                  What are you grateful for today?
-                </p>
-                <p className="whitespace-pre-wrap text-ink/85">
-                  {latestCheckin.gratitude}
+                <p className="mt-2 line-clamp-2 whitespace-pre-wrap text-sm text-ink/75">
+                  Grateful for: {latestCheckin.gratitude}
                 </p>
               </>
             ) : (
-              <p className="mt-3 text-ink/80">
+              <p className="mt-2 text-ink/80">
                 {significantOther === "None"
                   ? "Nothing here until you're connected."
                   : `${significantOther} hasn't shared a check-in yet.`}
@@ -300,13 +293,13 @@ export default function Dashboard() {
             )}
           </section>
 
-          <section className={`${CARD} p-6 sm:p-8`}>
-            <h2 className="font-display text-2xl text-ink">Next visit</h2>
-            <p className="mt-3 font-display text-3xl leading-snug text-rose-deep sm:text-4xl">
+          <section className={`${CARD} p-4 sm:p-8`}>
+            <h2 className="font-display text-xl text-ink sm:text-2xl">Next visit</h2>
+            <p className="mt-1 font-display text-2xl leading-snug text-rose-deep sm:text-4xl">
               {formatCountdown(visitDate, now)}
             </p>
             {!visitDate ? (
-              <p className="mt-3 text-ink/80">
+              <p className="mt-2 text-ink/80">
                 <Link href="/visits" className={link}>
                   Set your next visit date
                 </Link>{" "}
@@ -318,7 +311,7 @@ export default function Dashboard() {
           {anniversary ? (
             <Link
               href="/us"
-              className={`${CARD} flex items-center justify-between gap-4 p-5 hover:bg-white ${FOCUS}`}
+              className={`${CARD} flex items-center justify-between gap-4 p-4 hover:bg-white ${FOCUS}`}
             >
               <span>
                 <span className="block font-display text-xl text-ink">
@@ -342,34 +335,34 @@ export default function Dashboard() {
           ) : null}
 
           <section aria-label="Quick actions">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-4 gap-2 sm:gap-3">
               <Link
                 href="/checkins"
-                className={`flex flex-col items-start gap-2 rounded-2xl bg-rose-deep p-4 font-semibold text-white hover:brightness-110 ${FOCUS}`}
+                className={`flex flex-col items-center justify-start gap-1 rounded-2xl bg-rose-deep p-3 text-center text-xs font-semibold text-white hover:brightness-110 sm:text-sm ${FOCUS}`}
               >
                 <PenLine className="h-6 w-6" aria-hidden="true" />
-                {checkedInToday ? "Check in again" : "Check in today"}
+                {checkedInToday ? "Check in again" : "Check in"}
               </Link>
               <Link
                 href="/checkins/view"
-                className={`${CARD} flex flex-col items-start gap-2 p-4 font-semibold text-ink hover:bg-white ${FOCUS}`}
+                className={`${CARD} flex flex-col items-center justify-start gap-1 p-3 text-center text-xs font-semibold text-ink hover:bg-white sm:text-sm ${FOCUS}`}
               >
                 <ScrollText className="h-6 w-6 text-rose-deep" aria-hidden="true" />
-                Check-in feed
+                Feed
               </Link>
               <Link
                 href="/visits"
-                className={`${CARD} flex flex-col items-start gap-2 p-4 font-semibold text-ink hover:bg-white ${FOCUS}`}
+                className={`${CARD} flex flex-col items-center justify-start gap-1 p-3 text-center text-xs font-semibold text-ink hover:bg-white sm:text-sm ${FOCUS}`}
               >
                 <CalendarHeart className="h-6 w-6 text-rose-deep" aria-hidden="true" />
-                Change visit date
+                Visit date
               </Link>
               {partnerId ? (
                 <button
                   type="button"
                   onClick={thinkingOfYou}
                   disabled={nudgeBusy}
-                  className={`${CARD} flex flex-col items-start gap-2 p-4 text-left font-semibold text-ink hover:bg-white disabled:opacity-60 ${FOCUS}`}
+                  className={`${CARD} flex flex-col items-center justify-start gap-1 p-3 text-center text-xs font-semibold text-ink hover:bg-white disabled:opacity-60 sm:text-sm ${FOCUS}`}
                 >
                   <Heart className="h-6 w-6 text-rose-deep" aria-hidden="true" />
                   {nudgeBusy ? "Sending..." : "Thinking of you"}
@@ -378,7 +371,7 @@ export default function Dashboard() {
             </div>
 
             {nudge ? (
-              <p role="status" className="mt-4 font-semibold text-ink">
+              <p role="status" className="mt-3 font-semibold text-ink">
                 {nudge}
               </p>
             ) : null}

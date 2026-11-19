@@ -209,7 +209,7 @@ export default function BucketListPage() {
             ) : null}
           </form>
 
-          <h2 className="mb-4 mt-12 font-display text-3xl text-ink">To do</h2>
+          <h2 className="mb-3 mt-6 font-display text-2xl sm:mb-4 sm:mt-12 sm:text-3xl text-ink">To do</h2>
           {todo.length === 0 ? (
             <p className="text-ink/75">
               {items.length === 0
@@ -226,7 +226,7 @@ export default function BucketListPage() {
 
           {done.length > 0 ? (
             <>
-              <h2 className="mb-4 mt-12 font-display text-3xl text-ink">
+              <h2 className="mb-3 mt-6 font-display text-2xl sm:mb-4 sm:mt-12 sm:text-3xl text-ink">
                 Done together
               </h2>
               <ul className="space-y-3">

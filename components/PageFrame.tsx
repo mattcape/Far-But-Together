@@ -9,16 +9,18 @@ export default function PageFrame({
   subtitle,
   children,
   width = "max-w-3xl",
+  mobileSubtitle = false,
 }: {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
   width?: string;
+  mobileSubtitle?: boolean;
 }) {
   return (
     <main
       id="main"
-      className="min-h-screen px-6 py-10"
+      className="min-h-screen px-5 py-5 sm:px-6 sm:py-10"
       style={{ background: SKY_BACKGROUND }}
     >
       <div className={`mx-auto ${width}`}>
@@ -26,15 +28,15 @@ export default function PageFrame({
 
         <SubTabs />
 
-        <h1 className="font-display text-4xl text-ink sm:text-5xl">{title}</h1>
+        <h1 className="font-display text-3xl text-ink sm:text-5xl">{title}</h1>
 
         {subtitle ? (
-          <p className="mt-3 max-w-xl text-lg leading-relaxed text-ink/80">
+          <p className={`mt-1 max-w-xl text-base leading-snug text-ink/80 sm:mt-3 sm:text-lg sm:leading-relaxed ${mobileSubtitle ? "" : "hidden sm:block"}`}>
             {subtitle}
           </p>
         ) : null}
 
-        <div className="mt-8">{children}</div>
+        <div className="mt-4 sm:mt-8">{children}</div>
       </div>
     </main>
   );

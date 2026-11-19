@@ -48,7 +48,7 @@ export default function MoodChart({
         viewBox={`0 0 ${W} ${H}`}
         role="img"
         aria-label={`Mood over the last ${days} days. ${summary}.`}
-        className="h-auto w-full"
+        className="h-auto max-h-44 w-full sm:max-h-none"
       >
         {[2, 4, 6, 8, 10].map((m) => (
           <g key={m}>

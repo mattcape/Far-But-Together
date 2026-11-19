@@ -1,7 +1,7 @@
 "use client";
 
+import Collapse from "@/components/Collapse";
 import { useEffect, useState, type FormEvent } from "react";
-import Link from "next/link";
 import PageFrame from "@/components/PageFrame";
 import { supabase } from "@/lib/supabase";
 import { saveDisplayName } from "@/lib/profile";
@@ -10,7 +10,7 @@ import DataExport from "@/components/DataExport";
 import DeleteAccount from "@/components/DeleteAccount";
 import RelationshipSettings from "@/components/RelationshipSettings";
 import TimezoneSettings from "@/components/TimezoneSettings";
-import { CARD, INPUT, PRIMARY_BUTTON, SECONDARY_BUTTON } from "@/lib/ui";
+import { INPUT, PRIMARY_BUTTON, SECONDARY_BUTTON } from "@/lib/ui";
 import { getCurrentUser } from "@/lib/auth";
 
 type Message = { kind: "ok" | "error"; text: string } | null;
@@ -193,9 +193,8 @@ export default function SettingsPage() {
       title="Settings"
       subtitle="Change how your name appears, update your password, or sign out."
     >
-      <div className="space-y-6">
-        <section className={`${CARD} p-6`}>
-          <h2 className="font-display text-2xl text-ink">Your name</h2>
+      <div className="space-y-2 sm:space-y-6">
+        <Collapse title="Your name">
 
           {nameChanges !== null && nameChanges >= 1 && savedName ? (
             <div className="mt-4">
@@ -256,10 +255,9 @@ export default function SettingsPage() {
               </button>
             </form>
           )}
-        </section>
+        </Collapse>
 
-        <section className={`${CARD} p-6`}>
-          <h2 className="font-display text-2xl text-ink">Password</h2>
+        <Collapse title="Password">
 
           <form onSubmit={savePassword} className="mt-4">
             <label
@@ -302,30 +300,18 @@ export default function SettingsPage() {
               {busy === "password" ? "Saving..." : "Update password"}
             </button>
           </form>
-        </section>
+        </Collapse>
 
         <TimezoneSettings />
 
         <AppearanceSettings />
 
         <RelationshipSettings />
-
-        <p className="px-1 text-ink/85">
-          Got a request to be someone&apos;s partner?{" "}
-          <Link
-            href="/relationship-requests"
-            className="font-semibold text-ink underline decoration-rose-deep decoration-2 underline-offset-4"
-          >
-            See relationship requests
-          </Link>
-        </p>
-
         <DataExport />
 
         <DeleteAccount />
 
-        <section className={`${CARD} p-6`}>
-          <h2 className="font-display text-2xl text-ink">Sign out</h2>
+        <Collapse title="Sign out">
 
           <p className="mt-2 text-ink/75">
             You&apos;re signed in as{" "}
@@ -339,7 +325,7 @@ export default function SettingsPage() {
           >
             Sign out
           </button>
-        </section>
+        </Collapse>
       </div>
     </PageFrame>
   );

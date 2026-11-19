@@ -215,7 +215,7 @@ export default function CountdownsPage() {
             </button>
           </form>
 
-          <h2 className="mb-4 mt-12 font-display text-3xl text-ink">
+          <h2 className="mb-3 mt-6 font-display text-2xl sm:mb-4 sm:mt-12 sm:text-3xl text-ink">
             Coming up
           </h2>
 
@@ -287,7 +287,7 @@ export default function CountdownsPage() {
 
           {past.length > 0 ? (
             <>
-              <h2 className="mb-4 mt-12 font-display text-3xl text-ink">
+              <h2 className="mb-3 mt-6 font-display text-2xl sm:mb-4 sm:mt-12 sm:text-3xl text-ink">
                 Past
               </h2>
               <ul className="space-y-3">

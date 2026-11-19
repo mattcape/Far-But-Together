@@ -1,10 +1,11 @@
 "use client";
 
+import Collapse from "@/components/Collapse";
 import { useState } from "react";
 import { format } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { myTimeZone } from "@/lib/tz";
-import { CARD, SECONDARY_BUTTON } from "@/lib/ui";
+import { SECONDARY_BUTTON } from "@/lib/ui";
 import { getCurrentUser } from "@/lib/auth";
 
 // Downloads a copy of your data as a JSON file. Tables that don't exist yet
@@ -85,8 +86,7 @@ export default function DataExport() {
   }
 
   return (
-    <section className={`${CARD} p-6`}>
-      <h2 className="font-display text-2xl text-ink">Download your data</h2>
+    <Collapse title="Download your data">
       <p className="mt-2 text-ink/75">
         Get a copy of your check-ins, dates, memories, letters and more as one
         file.
@@ -106,6 +106,6 @@ export default function DataExport() {
           {message}
         </p>
       ) : null}
-    </section>
+    </Collapse>
   );
 }
